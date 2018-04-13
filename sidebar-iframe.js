@@ -211,6 +211,8 @@ let vue = new Vue({
                 // backspace
                 if (this.pickingField && _.includes([undefined, document.body], e.target))
                     this.resetSelector(this.pickingField);
+            } else if (_.includes([37,39], e.keyCode)) {
+                this.sendMessage('togglePosition');
             } else if (e.target) {
                 // delegate to parent
                 e = _.pick(e, ['ctrlKey', 'shiftKey', 'altKey', 'metaKey', 'repeat', 'keyCode', 'key']);

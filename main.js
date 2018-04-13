@@ -110,12 +110,7 @@ function loadResources() {
 }
 
 function onKeyUp (e) {
-	// note: on remote call from iframe window e.target will not be set
-
-	if (false) {
-		// no keyup handlers here yet
-
-	} else if (e.target) {
+	if (selectorGadget) {
 		// delegate to iframe
 		e = _.pick(e, ['ctrlKey', 'shiftKey', 'altKey', 'metaKey', 'repeat', 'keyCode', 'key']);
 		instance.messageBus.sendMessage('keyUp', e);

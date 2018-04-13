@@ -211,18 +211,12 @@ let vue = new Vue({
             if (e.keyCode === 27) {
                 // esc
                 this.resetView();
-            } else if (_.includes([8,46], e.keyCode)) {
+            } else if (_.includes([8,46], e.keyCode) && isRoot && this.pickingField) {
                 // backspace
-                if (this.pickingField && isRoot)
-                    this.resetSelector(this.pickingField);
-            } else if (_.includes([37,39], e.keyCode)) {
+                this.resetSelector(this.pickingField);
+            } else if (_.includes([37,39], e.keyCode) && isRoot) {
                 // < and > arrow keys
-                if (isRoot)
-                    this.sendMessage('togglePosition');
-            } else if (e.target) {
-                // delegate to parent
-                e = _.pick(e, ['ctrlKey', 'shiftKey', 'altKey', 'metaKey', 'repeat', 'keyCode', 'key']);
-                this.sendMessage('keyUp', e);
+                this.sendMessage('togglePosition');
             }
         },
         sendMessage: function (event, data) {

@@ -103,14 +103,8 @@ function loadResources() {
 }
 
 function onKeyUp (e) {
-	if (e.keyCode === 27) {
-		// esc
-		disablePicker();
-		ScrapeMate.messageBus.sendMessage('pickerDisabled');
-	} else if (_.includes([8,46], e.keyCode)) {
-		// delete, backspace
-		ScrapeMate.messageBus.sendMessage('resetSelector');
-	}
+	e = _.pick(e, ['ctrlKey', 'shiftKey', 'altKey', 'metaKey', 'repeat', 'keyCode', 'key']);
+	ScrapeMate.messageBus.sendMessage('keyUp', e);
 }
 
 function initUI (cb) {
@@ -129,6 +123,7 @@ const messageListeners = {
 
 	closeAll: function () {
 		ScrapeMate.messageBus.detach();
+		window.removeEventListener('keyup', onKeyUp);
 		disablePicker();
 		document.body.removeChild(sidebarIFrame);
 	},
@@ -228,6 +223,7 @@ const messageListeners = {
 function main () {
     if (document.querySelector('#ScrapeMate')) {
 		ScrapeMate.messageBus.detach();
+		// reattach to our currently existing scope and tell it to shutdown
 		ScrapeMate.messageBus.attach(window);
 		ScrapeMate.messageBus.sendMessage('closeAll');
         return;
@@ -236,7 +232,7 @@ function main () {
 	loadResources().then(function () {
 		initUI();
 
-		// setup hotkeys
+		// setup event handlers
 		window.addEventListener('keyup', onKeyUp);
 
 		// try to avoid selecting our own iframe

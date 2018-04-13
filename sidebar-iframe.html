@@ -119,20 +119,30 @@
                 </div>
 
                 <div class="window">
+
+                    <!-- Data Single Element -->
+
                     <div v-if="controlTab === 'data' && selElemAttrs.length == 1" class="data single">
                         <div v-for="([attr, value]) in sortedSelElemAttrs[0]">
                             <span class="attr">{{ attr }}</span></span class="value">{{ value }}</span>
                         </div>
                     </div>
+
+                    <!-- Data Many Elements -->
+
                     <div v-else-if="controlTab === 'data' && selElemAttrs.length > 1" class="data many">
                         <div class="buttons">
                             <button v-for="attr in selElemUniqAttrs" :disabled="attrToShow == attr" @click="attrToShow = attr">{{attr}}</button>
                         </div>
                         <div class="value" v-for="attrs in selElemAttrs">{{ attrs[attrToShow] }}</div>
                     </div>
+
+                    <!-- Reserved -->
+
                     <div v-else-if="controlTab === 'soon'" class="soon">
                             Nothing here yet.
                     </div>
+
                 </div>
             </div>
         </div>

@@ -202,14 +202,15 @@ let vue = new Vue({
     methods: {
 
         onKeyUp: function (e) {
+            // note: on remote call from parent window e.target will not be set
+
             if (e.keyCode === 27) {
                 // esc
                 this.resetView();
-            } else if (_.includes([8,46], e.keyCode) &&
-                        this.pickingField &&
-                        e.target === document.body) {
+            } else if (_.includes([8,46], e.keyCode)) {
                 // backspace
-                this.resetSelector(this.pickingField);
+                if (this.pickingField && _.includes([undefined, document.body], e.target))
+                    this.resetSelector(this.pickingField);
             }
         },
         sendMessage: function (event, data) {
@@ -224,6 +225,7 @@ let vue = new Vue({
         },
         remote_resetView: function () {this.resetView();},
         remote_jsDisabled: function () {this.jsDisabled = true;},
+        remote_keyUp: function(e) {this.onKeyUp(e);},
 
         // Template Management
 
@@ -403,7 +405,7 @@ let vue = new Vue({
             if (f === _.last(this.fields)) this.addField();
             this._onFieldNameInput();
         },
-        _onFieldNameInput: _.debounce(function () {this.commitTemplate()}, 300),
+        _onFieldNameInput: _.debounce(function () {this.commitTemplate();}, 300),
         checkAndUpdateSelectors: function (sels) {
             if (!sels) sels = this.template.fields.map(f => f.selector);
             this.sendMessage('checkSelectors', sels).then(data => {
@@ -427,8 +429,6 @@ let vue = new Vue({
             if (field === this.pickingField)
                 this.submitSelector(field.selector);
         },
-        remote_resetSelector: function () {this.resetSelector(this.pickingField);},
-        remote_pickerDisabled: function () {this.disablePicker();},
         remote_selectorPicked: function (sel) {
             if (this.pickingField)
                 this.pickingField.selector = sel;

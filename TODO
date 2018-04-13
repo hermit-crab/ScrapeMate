@@ -29,6 +29,7 @@ The whole thing with persisting sidebar and js toggling in a bookmarklet like en
         firefox doe not have sandbox directive, but we can use "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
         (or possibly sandbox also inside csp?) to run vuejs
 medium - some kinda way to let specify target attribute
+very hard - instead of making any page/css mutations do all highlighting and picking over a click through overlay div
 
 Low:
 easy - template shift select many

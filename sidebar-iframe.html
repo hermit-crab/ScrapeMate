@@ -1,0 +1,144 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- <script src="vendor/vue.js"></script> -->
+    <script src="vendor/vue.js"></script>
+    <script src="vendor/lodash.min.js"></script>
+    <script src="common.js"></script>
+    <link rel="stylesheet" type="text/css" href="vendor/reset.css">
+    <link rel="stylesheet" type="text/css" href="sidebar-iframe.css">
+</head>
+<body>
+    <div id="sidebar" style="display: none;">
+
+        <!-- Head Controls -->
+
+        <div id="head-controls">
+            <div class="buttons">
+                <div>
+                    <button class="blue plain-button" @click="newTemplate" title="Create new template">+</button>
+                    <button :disabled="jsDisabled" @click="sendMessage('disableJs')" class="plain-button"
+                            title="Disable JavaScript on this page (very naive method is used)">js</button>
+                    <button class="plain-button" @click="sendMessage('togglePosition')" title="Toggle sidebar position">‹ ›</button>
+                    <button class="plain-button" @click="openJsonEditor" title="Edit template as JSON">{}</button>
+                    <button class="plain-button" @click="openTemplatesView" title="Show all archived templates">list</button>
+                    <button class="plain-button" @click="revertTemplate" title="Undo all modifications" :disabled="!stashedTemplate || !templateEdited">⏪</button>
+                </div>
+                <button class="red plain-button" @click="sendMessage('closeAll')">✕</button>
+            </div>
+            <div class="title">
+                <label for="template-title" class="left">Template: </label>
+                <input class="template-title" id="template-title" @input="onTemplateTitleInput" v-model="template.title"/>
+            </div>
+        </div>
+
+        <!-- Templates List -->
+
+        <modal-overlay @click="templatesView = false" v-if="templatesView">
+            <div id="templates-list">
+                <div class="buttons">
+                    <label class="custom-file-picker plain-button" title="Import new templates from file">
+                        <input type="file" @change="importTemplates($event)"/>import
+                    </label>
+                    <button class="plain-button" @click="exportTemplates" title="Save all templates to file">export</button>
+                    <button class="plain-button" @click="matchAllTemplatesSelectors"
+                            title="Apply all templates to the current webpage and fill info on the number of matching fields">match</button>
+                    <div class="sep"></div>
+                    <button class="plain-button" @click="selectAllTemplates" >{{selectedTemplates.length ? 'none' : 'all'}}</button>
+                    <button class="plain-button" @click="removeSelectedTemplates" :disabled="!selectedTemplates.length">delete</button>
+                </div>
+                <div class="list">
+                    <div v-for="(t, i) in sortedTemplates"
+                        :title="t.title" :key="t.id"
+                        @click="selectTemplate(t)"
+                        @dblclick="pickTemplate(t)"
+                        :class="{selected:_.includes(selectedTemplates, t.id)}" class="template">
+                        <div class="title">{{ t.title }}</div>
+                        <div class="stat" :class="[templateStat[i].matchPower]">{{ templateStat[i].selCount }}</div>
+                    </div>
+                </div>
+            </div>
+        </modal-overlay>
+
+        <!-- Fields List -->
+
+        <div id="field-list">
+            <div class="field"
+                ref="field"
+                :class="{picking:field===pickingField}"
+                v-for="(field, i) in template.fields"
+                @mouseenter="sendMessage('highlight', field.selector)"
+                @mouseleave="sendMessage('unhighlight')">
+
+                <div class="inner" >
+                    <div class="top">
+                        <input v-model.trim="field.name" @input="onFieldNameInput(field)" placeholder="field name">
+                        <button @click="onPickerClick(field, $event)" class="orange plain-button" @keypress.prevent>pick</button>
+                        <button :disabled="i === fields.length-1" class="plain-button" @click="resetSelector(field)">reset</button>
+                        <button class="plain-button" :disabled="i === fields.length-1" @click="removeField(i)">del</button>
+                    </div>
+                    <div class="bottom">
+                        <input v-model.trim="field.selector"
+                                class="selector"
+                                placeholder="css or xpath"
+                                :class="{error:fieldCovers[i] === -1}"
+                                @input="onSelectorInput(field)"
+                                @keyup.enter="onSelectorEnter(field)">
+                        <span :disabled="i === fields.length-1" class="amount">{{ fieldCovers[i] === -1 ? 0 : fieldCovers[i] }}</span>
+                    </div>
+
+                    <div v-if="i !== fields.length-1" class="indicator" :class="[fieldCovers[i] === undefined ? 'unknown' : (fieldCovers[i] > 0 ? 'good' : 'bad')]"></div>
+                    <div v-else class="indicator"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Template Json Editor -->
+
+        <modal-overlay @click="jsonEditorView = false" v-if="jsonEditorView">
+            <div id="json-editor">
+                <div class="buttons">
+                    <button class="plain-button" @click="copyJsonEditor">copy</button>
+                    <button class="plain-button" @click="resetJsonEditor" :disabled="jsonEditorIsReset">reset</button>
+                    <button class="plain-button" @click="applyJsonEditor" :disabled="jsonEditorIsReset">apply</button>
+                </div>
+                <textarea ref="jsonEditor" v-model="jsonEditorText" @input="jsonEditorIsReset = false"></textarea>
+            </div>
+        </modal-overlay>
+
+        <!-- Control Tabs -->
+        <div id="control-tabs" ref="controlTabs" v-show='controlTabsView'>
+            <div class="inner">
+                <div class="buttons">
+                    <button class="data"
+                            @click="controlTab = 'data'"
+                            :disabled="controlTab === 'data'">Data</button>
+                    <button class="soon"
+                            @click="controlTab = 'soon'"
+                            :disabled="controlTab === 'soon'">Soon™</button>
+                </div>
+
+                <div class="window">
+                    <div v-if="controlTab === 'data' && selElemAttrs.length == 1" class="data single">
+                        <div v-for="([attr, value]) in sortedSelElemAttrs[0]">
+                            <span class="attr">{{ attr }}</span></span class="value">{{ value }}</span>
+                        </div>
+                    </div>
+                    <div v-else-if="controlTab === 'data' && selElemAttrs.length > 1" class="data many">
+                        <div class="buttons">
+                            <button v-for="attr in selElemUniqAttrs" :disabled="attrToShow == attr" @click="attrToShow = attr">{{attr}}</button>
+                        </div>
+                        <div class="value" v-for="attrs in selElemAttrs">{{ attrs[attrToShow] }}</div>
+                    </div>
+                    <div v-else-if="controlTab === 'soon'" class="soon">
+                            Nothing here yet.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="sidebar-iframe.js"></script>
+</body>
+</html>

@@ -31,6 +31,7 @@ The whole thing with persisting sidebar and js toggling in a bookmarklet like en
 medium - some kinda way to let specify target attribute
 
 Low:
+easy - template shift select many
 medium - highlight target element when hovered over in a .data.many control tab
 hard - tweak styles for firefox
 hard - fix styles for firefox gtk build

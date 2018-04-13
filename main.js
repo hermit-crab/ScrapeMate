@@ -173,6 +173,17 @@ const messageListeners = {
 		respond(data);
 	},
 
+	saveText: function (text) {
+		var el = document.createElement('a');
+		el.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+		let dt = new Date().toISOString().split('T')[0];
+		el.setAttribute('download', `ScrapeMate.storage.${dt}.json`);
+		el.style.display = 'none';
+		document.body.appendChild(el);
+		el.click();
+		document.body.removeChild(el);
+	},
+
 	location: function (data, respond) {
 		respond(location.href);
 	},

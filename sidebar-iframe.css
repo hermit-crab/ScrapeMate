@@ -230,6 +230,10 @@
 	margin: 5px 4px 5px 0;
 }
 
+#templates-list .buttons button:last-of-type {
+	margin-left: auto;
+}
+
 #templates-list .buttons .sep {
 	margin: 9px 3px 8px 0;
 	width: 1px;

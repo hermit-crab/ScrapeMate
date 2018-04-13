@@ -30,7 +30,7 @@
     "128": "icons/128.png"
   },
   "sandbox": {
-     "pages": ["sidebar-iframe.html"]
+    "pages": ["sidebar-iframe.html"]
   },
   "permissions": ["tabs", "http://*/*", "https://*/*", "storage"],
   "version": "0.1",

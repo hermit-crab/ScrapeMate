@@ -40,12 +40,10 @@
                     <label class="custom-file-picker plain-button" title="Import new templates from file">
                         <input type="file" @change="importTemplates($event)"/>import
                     </label>
-                    <button class="plain-button" @click="exportTemplates" title="Save all templates to file">export</button>
-                    <button class="plain-button" @click="matchAllTemplatesSelectors"
-                            title="Apply all templates to the current webpage and fill info on the number of matching fields">match</button>
                     <div class="sep"></div>
-                    <button class="plain-button" @click="selectAllTemplates" >{{selectedTemplates.length ? 'none' : 'all'}}</button>
+                    <button class="plain-button" @click="exportTemplates" :disabled="!selectedTemplates.length" title="Save templates to file">export</button>
                     <button class="plain-button" @click="removeSelectedTemplates" :disabled="!selectedTemplates.length">delete</button>
+                    <button class="plain-button" @click="selectAllTemplates" >{{selectedTemplates.length ? 'none' : 'all'}}</button>
                 </div>
                 <div class="list">
                     <div v-for="(t, i) in sortedTemplates"

@@ -136,6 +136,9 @@ let vue = new Vue({
             // let know we good
             this.sendMessage('sidebarInitialized');
 
+            // match all available templates to current page
+            this.checkAndUpdateSelectors(this.getAllSelectors(this.templates));
+
             // get page url
             return this.sendMessage('location');
         }).then(url => {
@@ -150,7 +153,6 @@ let vue = new Vue({
                 this.template = this.templates[id];
                 this.stashedTemplate = _.cloneDeep(this.template);
             }
-            this.checkAndUpdateSelectors();
         });
     },
     mounted: function () {
@@ -228,6 +230,11 @@ let vue = new Vue({
             this.controlTabsView = false;
             this.jsonEditorView = false;
             this.templatesView = false;
+        },
+        getAllSelectors: function (templates) {
+            return _.chain(templates).values()
+                    .flatMap(t => t.fields.map(f => f.selector))
+                    .uniq().value();
         },
         remote_resetView: function () {this.resetView();},
         remote_jsDisabled: function () {this.jsDisabled = true;},
@@ -329,15 +336,6 @@ let vue = new Vue({
                     });
                     resolve(id);
                 });
-            });
-        },
-        matchAllTemplatesSelectors: function () {
-            let sels = _.chain(vue.templates)
-                        .values()
-                        .flatMap(t => t.fields.map(f => f.selector))
-                        .uniq().value()
-            this.sendMessage('checkSelectors', sels).then(data => {
-                this.selCovers = Object.assign({}, this.selCovers, data);
             });
         },
         onTemplateTitleInput: _.debounce(function () {this.commitTemplate()}, 300),
@@ -448,17 +446,9 @@ let vue = new Vue({
 
         exportTemplates: function () {
             loadStorage().then(storage => {
-                let templates = _.omit(storage, ['options']);
-                let content = JSON.stringify(storage, null, 2);
-
-                var el = document.createElement('a');
-                el.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
-                let dt = new Date().toISOString().split('T')[0];
-                el.setAttribute('download', `ScrapeMate.storage.${dt}.json`);
-                el.style.display = 'none';
-                document.body.appendChild(el);
-                el.click();
-                document.body.removeChild(el);
+                let templates = _.pick(storage, this.selectedTemplates);
+                let content = JSON.stringify(templates, null, 2);
+                this.sendMessage('saveText', content);
             });
         },
         importTemplates: function (e) {
@@ -494,9 +484,9 @@ let vue = new Vue({
                     return ff;
                 });
                 if (this.templates[id])
-                    console.log(`ScrapeMate Will Overwrite ${id}:`, tt)
+                    console.log(`ScrapeMate will overwrite ${id}:`, tt)
                 else
-                    console.log(`ScrapeMate Will Create ${id}:`, tt)
+                    console.log(`ScrapeMate will create ${id}:`, tt)
                 return [id, tt];
             });
             saveStorage(_.fromPairs(templates));
@@ -504,6 +494,7 @@ let vue = new Vue({
                 this.augmentTemplate(t, id);
                 Vue.set(this.templates, id, t);
             });
+            this.checkAndUpdateSelectors(this.getAllSelectors(_.fromPairs(templates)));
         },
 
         // Field JSON editor

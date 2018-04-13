@@ -46,6 +46,9 @@ function injectCSS (url) {
 }
 
 function disablePicker () {
+	// TODO:low we might want to maintain sg instance ang
+	// just toggle it on and off instead of unsetting?
+
 	if (!selectorGadget) return;
 	sidebarIFrame.classList.remove('ScrapeMate_picking');
 	selectorGadget.unbindAndRemoveInterface()
@@ -110,8 +113,10 @@ function onKeyUp (e) {
 	// note: on remote call from iframe window e.target will not be set
 
 	if (false) {
+		// no keyup handlers here yet
 
 	} else if (e.target) {
+		// delegate to iframe
 		e = _.pick(e, ['ctrlKey', 'shiftKey', 'altKey', 'metaKey', 'repeat', 'keyCode', 'key']);
 		instance.messageBus.sendMessage('keyUp', e);
 	}

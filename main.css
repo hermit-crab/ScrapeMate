@@ -22,3 +22,24 @@
     outline: 2px #6495ed dashed !important;
     box-shadow: 0 0 100px #ffff009f inset !important;
 }
+
+.selectorgadget_suggested {
+    background-color: #FF5 !important;
+    background-image: none !important;
+    outline: 1px dashed #FF5 !important;
+    box-shadow: 0 0 2px #FF5 !important;
+}
+
+.selectorgadget_selected {
+    background-color: #0F0 !important;
+    background-image: none !important;
+    outline: 1px dashed #0F0 !important;
+    box-shadow: 0 0 4px #0F0 !important;
+}
+
+.selectorgadget_rejected {
+    background-color: #F00 !important;
+    background-image: none !important;
+    outline: 1px dashed #F00 !important;
+    box-shadow: 0 0 4px #F00 !important;
+}

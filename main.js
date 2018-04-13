@@ -1,18 +1,21 @@
 (function () {
 
+const instance = ScrapeMate;
+
 const SOURCES = {
-	sgJQuery: ScrapeMate.baseURL + '/vendor/jquery-1.3.1.min.js',
-	diff_match_patch: ScrapeMate.baseURL + '/vendor/diff_match_patch.js',
-	sg: ScrapeMate.baseURL + '/vendor/selectorgadget_combined.min.js',
-	sgCss: ScrapeMate.baseURL + '/vendor/selectorgadget_combined.css',
-	lodash: ScrapeMate.baseURL + '/vendor/lodash.min.js',
-	iframe: ScrapeMate.baseURL + '/sidebar-iframe.html',
-	common: ScrapeMate.baseURL + '/common.js',
-	mainCss: ScrapeMate.baseURL + '/main.css'
+	sgJQuery: instance.baseURL + '/vendor/jquery-1.3.1.min.js',
+	diff_match_patch: instance.baseURL + '/vendor/diff_match_patch.js',
+	sg: instance.baseURL + '/vendor/selectorgadget_combined.min.js',
+	sgCss: instance.baseURL + '/vendor/selectorgadget_combined.css',
+	lodash: instance.baseURL + '/vendor/lodash.min.js',
+	iframe: instance.baseURL + '/sidebar-iframe.html',
+	common: instance.baseURL + '/common.js',
+	mainCss: instance.baseURL + '/main.css'
 }
 
 let selectorGadget, sidebarIFrame, _;
 let jsDisabled = false;
+let selectedStack = [];
 
 function injectScripts (urls, callback) {
 	let script = document.createElement('script');
@@ -54,10 +57,11 @@ function disablePicker () {
 function enablePicker () {
 	sidebarIFrame.classList.add('ScrapeMate_picking');
 	selectorGadget = new SelectorGadget();
-	selectorGadget.makeInterface()
-	selectorGadget.clearEverything()
-	selectorGadget.setMode('interactive')
-	selectorGadget.sg_div[0].style = 'right: -9999px !important;';
+	selectorGadget.makeInterface();
+	selectorGadget.clearEverything();
+	selectorGadget.setMode('interactive');
+	selectorGadget.sg_div[0].style = 'right: -9999px !important';
+	instance.sgInstance = selectorGadget; // debug
 }
 
 function xpath (expr, parent) {
@@ -85,8 +89,8 @@ function select (sel) {
 
 function loadResources() {
 	return new Promise(function (resolve) {
-		if (ScrapeMate.loaded) {
-			_ = ScrapeMate.lodash;
+		if (instance.loaded) {
+			_ = instance.lodash;
 			resolve();
 			return;
 		}
@@ -95,16 +99,22 @@ function loadResources() {
 		injectCSS(SOURCES.mainCss);
 		injectScripts([SOURCES.sg, SOURCES.lodash, SOURCES.common], function () {
 			_ = window._.noConflict();
-			ScrapeMate.lodash = _;
-			ScrapeMate.loaded = true;
+			instance.lodash = _;
+			instance.loaded = true;
 			resolve();
 		});
 	});
 }
 
 function onKeyUp (e) {
-	e = _.pick(e, ['ctrlKey', 'shiftKey', 'altKey', 'metaKey', 'repeat', 'keyCode', 'key']);
-	ScrapeMate.messageBus.sendMessage('keyUp', e);
+	// note: on remote call from iframe window e.target will not be set
+
+	if (false) {
+
+	} else if (e.target) {
+		e = _.pick(e, ['ctrlKey', 'shiftKey', 'altKey', 'metaKey', 'repeat', 'keyCode', 'key']);
+		instance.messageBus.sendMessage('keyUp', e);
+	}
 }
 
 function initUI (cb) {
@@ -112,24 +122,25 @@ function initUI (cb) {
 	sidebarIFrame = injectElement(document.body, 'iframe', {src: SOURCES.iframe, id: 'ScrapeMate'});
 
 	// setup communication with sidebar
-	ScrapeMate.messageBus.attach(sidebarIFrame.contentWindow);
-	ScrapeMate.messageBus.listeners = messageListeners;
+	instance.messageBus.attach(sidebarIFrame.contentWindow);
+	instance.messageBus.listeners = messageListeners;
 }
 
 const messageListeners = {
 
 	disablePicker: disablePicker,
 	enablePicker: enablePicker,
+	keyUp: onKeyUp,
 
 	closeAll: function () {
-		ScrapeMate.messageBus.detach();
+		instance.messageBus.detach();
 		window.removeEventListener('keyup', onKeyUp);
 		disablePicker();
 		document.body.removeChild(sidebarIFrame);
 	},
 
 	sidebarInitialized: function () {
-		if (jsDisabled) ScrapeMate.messageBus.sendMessage('jsDisabled');
+		if (jsDisabled) instance.messageBus.sendMessage('jsDisabled');
 	},
 
 	togglePosition: function () {
@@ -170,7 +181,7 @@ const messageListeners = {
 			document.documentElement.innerHTML = text;
 			injectCSS(SOURCES.sgCss);
 			injectCSS(SOURCES.mainCss);
-			ScrapeMate.messageBus.detach();
+			instance.messageBus.detach();
 			jsDisabled = true;
 			initUI();
 		});
@@ -222,10 +233,10 @@ const messageListeners = {
 
 function main () {
     if (document.querySelector('#ScrapeMate')) {
-		ScrapeMate.messageBus.detach();
+		instance.messageBus.detach();
 		// reattach to our currently existing scope and tell it to shutdown
-		ScrapeMate.messageBus.attach(window);
-		ScrapeMate.messageBus.sendMessage('closeAll');
+		instance.messageBus.attach(window);
+		instance.messageBus.sendMessage('closeAll');
         return;
 	}
 
@@ -249,7 +260,7 @@ function main () {
 		SelectorGadget.prototype.sgMousedown = function (e) {
 			let ret = SelectorGadget.prototype.sgMousedownOrig.call(this, e);
 			let sel = selectorGadget.path_output_field.value;
-			ScrapeMate.messageBus.sendMessage('selectorPicked', sel);
+			instance.messageBus.sendMessage('selectorPicked', sel);
 			return ret;
 		};
 	});

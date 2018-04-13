@@ -211,6 +211,9 @@ let vue = new Vue({
                 // backspace
                 if (this.pickingField && _.includes([undefined, document.body], e.target))
                     this.resetSelector(this.pickingField);
+            } else if (e.target) {
+                e = _.pick(e, ['ctrlKey', 'shiftKey', 'altKey', 'metaKey', 'repeat', 'keyCode', 'key']);
+                this.sendMessage('keyUp', e);
             }
         },
         sendMessage: function (event, data) {

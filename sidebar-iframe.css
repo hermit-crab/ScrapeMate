@@ -258,7 +258,8 @@
     background-color: #e8636375;
 }
 #templates-list .template:first-of-type .title::before {
-	content: 'â€¢ '
+    /* bullet point */
+    content: '\2022  ';
 }
 
 #templates-list .template > div {

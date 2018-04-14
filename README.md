@@ -1,9 +1,10 @@
 # ScrapeMate Beta ![GitHub Logo](/icons/24.png) 
 Scraping assistant tool. Editing and maintaining CSS/XPath selectors across webpages.  
-Available as a chrome extension but you can also try a [bookmarklet mode](https://rawgit.com/Unknowny/ScrapeMate/master/index.html).  
+Available as a chrome extension or you can also try a [bookmarklet mode](https://rawgit.com/Unknowny/ScrapeMate/master/index.html).  
 Built on top of the [SelectorGadget](https://github.com/cantino/selectorgadget).  
 
-Quick way to pick and maintain CSS/XPath selectors and their presets for external use: website testing or scraping. Includes features:
+Quick way to pick and maintain CSS/XPath selectors and their presets for external use: website testing or scraping.  
+Features include:
 * Element picker (from SelectorGadget).
 * Preset JSON editor (convenient for use in conjunction with scrapy or any similar tools).
 * List of presets ever worked on.

@@ -98,8 +98,8 @@ function loadResources() {
 			injectScripts([SOURCES.common], () => {
 				_ = instance.lodash;
 				resolve();
-				return;
 			});
+			return;
 		}
 
 		injectCSS(SOURCES.sgCss);

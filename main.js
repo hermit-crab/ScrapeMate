@@ -93,14 +93,18 @@ function select (sel) {
 function loadResources() {
 	return new Promise(function (resolve) {
 		if (instance.loaded) {
-			_ = instance.lodash;
-			resolve();
-			return;
+			// we still want to refresh our commons
+			// mostly for dev convenience
+			injectScripts([SOURCES.common], () => {
+				_ = instance.lodash;
+				resolve();
+				return;
+			});
 		}
 
 		injectCSS(SOURCES.sgCss);
 		injectCSS(SOURCES.mainCss);
-		injectScripts([SOURCES.sg, SOURCES.lodash, SOURCES.common], function () {
+		injectScripts([SOURCES.sg, SOURCES.lodash, SOURCES.common], () => {
 			_ = window._.noConflict();
 			instance.lodash = _;
 			instance.loaded = true;

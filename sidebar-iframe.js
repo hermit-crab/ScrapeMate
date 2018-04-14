@@ -377,8 +377,8 @@ let vue = new Vue({
                 let fbox = this.$refs.field[idx].getBoundingClientRect();
                 let cbox = this.$refs.controlTabs.getBoundingClientRect();
 
-                let scrollBy = (fbox.y + fbox.height) - cbox.y;
-                if (scrollBy > 0) this.$el.scrollTop += scrollBy + 10;
+                let scrollBy = (fbox.y + fbox.height + fbox.height*.85) - cbox.y;
+                if (scrollBy > 0) this.$el.scrollTop += scrollBy;
             }, 100);
         },
         disablePicker: function () {

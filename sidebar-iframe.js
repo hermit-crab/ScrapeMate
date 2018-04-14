@@ -245,7 +245,7 @@ let vue = new Vue({
         makeTemplate: function (augment) {
             return {
                 fields: [],
-                title: no3w(this.loc.hostname) + this.loc.pathname,
+                title: no3w(this.loc.hostname) + this.loc.pathname.replace(/\/$/, ''),
                 urls: [this.loc.href],
             };
         },

@@ -6,6 +6,7 @@
     <script src="vendor/lodash.min.js"></script>
     <script src="common.js"></script>
     <link rel="stylesheet" type="text/css" href="vendor/reset.css">
+    <link rel="stylesheet" type="text/css" href="vendor/essential-regular-styles.css">
     <link rel="stylesheet" type="text/css" href="sidebar-iframe.css">
 </head>
 <body>
@@ -71,9 +72,25 @@
                 <div class="inner" >
                     <div class="top">
                         <input v-model.trim="field.name" @input="onFieldNameInput(field)" placeholder="field name">
-                        <button @click="onPickerClick(field, $event)" class="orange plain-button" @keypress.prevent>pick</button>
-                        <button :disabled="i === fields.length-1" class="plain-button" @click="resetSelector(field)">reset</button>
-                        <button class="plain-button" :disabled="i === fields.length-1" @click="removeField(i)">del</button>
+                        <button @click="onPickerClick(field, $event)"
+                                class="orange plain-button icon-essential-regular-42-pen"
+                                title="Start picker"
+                                @keypress.prevent>
+                                </button>
+                        <button :disabled="i === fields.length-1"
+                                class="plain-button icon-essential-regular-31-document-copy"
+                                title="Clone field"
+                                @click="cloneField(i)">
+                                </button>
+                        <button :disabled="i === fields.length-1"
+                                class="plain-button icon-essential-regular-25-circle-blank"
+                                title="Reset selector"
+                                @click="resetSelector(field)">
+                                </button>
+                        <button class="plain-button icon-essential-regular-12-minus-big"
+                                :disabled="i === fields.length-1"
+                                @click="removeField(i)">
+                                </button>
                     </div>
                     <div class="bottom">
                         <input v-model.trim="field.selector"

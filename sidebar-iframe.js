@@ -426,12 +426,16 @@ let vue = new Vue({
                 this.attrToShow = this.selElemUniqAttrs[0];
             });
         },
-        resetSelector: function (field) {
-            if (!field) return;
-            field.selector = '';
-            this.onSelectorInput(field);
-            if (field === this.pickingField)
-                this.submitSelector(field.selector);
+        cloneField: function (idx) {
+            this.template.fields.splice(idx, 0, _.cloneDeep(this.fields[idx]));
+            this.commitTemplate();
+        },
+        resetSelector: function (f) {
+            if (!f) return;
+            f.selector = '';
+            this.onSelectorInput(f);
+            if (f === this.pickingField)
+                this.submitSelector(f.selector);
         },
         remote_selectorPicked: function (sel) {
             if (this.pickingField)

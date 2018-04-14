@@ -12,7 +12,7 @@ Features include:
 * Disabling page JavaScript (experimental, feature is being worked on).
 * Planned features: [TODO](/TODO)
 
-### Note
+### Notes
 Bookmarklet mode will not work on many pages (CSP enabled ones).  
 You can also install this in chrome development mode as an unpacked extension by just pointing it to the cloned repository directory.
 

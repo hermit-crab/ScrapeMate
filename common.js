@@ -41,26 +41,25 @@ ScrapeMate.selector = {
                 path = './/';
             }
 
-            let nodes = parent.querySelectorAll(sel);
+            let nodes = this._asArray(parent.querySelectorAll(sel));
 
             if (mod === 'text') {
                 return this._concatAll(
-                            this._asArray(nodes).map(node => this.xpath(path + 'text()', node))
+                            nodes.map(node => this.xpath(path + 'text()', node))
                         );
             } else {
-                path += '@' + mod.slice(5, -1);
+                let attr = mod.slice(5, -1).replace(/^[\s'"]+|[\s'"]+$/g, '');
+                path += '@' + attr;
                 return this._concatAll(
-                    this._asArray(nodes).map(node => this.xpath(path, node))
+                    nodes.map(node => this.xpath(path, node))
                 );
             }
         }
     },
 
     select: function (sel, parent) {
-        if (!parent) parent = document;
-
         try {
-            return ['css', this._asArray(parent.querySelectorAll(sel))];
+            return ['css', this.css(sel, parent)];
         } catch (e) {}
         try {
             return ['xpath', this.xpath(sel, parent)];
@@ -80,6 +79,13 @@ ScrapeMate.selector = {
         } catch (e) {}
 
         return null;
+    },
+
+    asElementNode: function (el) {
+        if (el.nodeType === Node.ELEMENT_NODE)
+            return el;
+        else
+            return el.ownerElement || el.parentElement || el.parentNode;
     }
 }
 
@@ -96,7 +102,7 @@ ScrapeMate.Bus.prototype = {
     // };
 
     listeners: {},
-    debug: true,
+    debug: false,
 
     _counter: 0,
     _messages: {},

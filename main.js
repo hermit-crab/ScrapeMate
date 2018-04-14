@@ -183,23 +183,26 @@ const messageListeners = {
 	getSelElemAttrs: function (selector, respond) {
 		// selector -> [{attr:val, attr:val...}, ...]
 
-		let selected;
-
-		selected = instance.selector.select(selector)[1];
+		let selected = instance.selector.select(selector)[1];
 
 		let elems = [];
 		_.forEach(selected, el => {
+			let targetEl = instance.selector.asElementNode(el);
+
 			let attrs = {};
-			_.forEach(el.attributes, attr => {
+
+			// AttrNode or TextNode
+			if (el !== targetEl) attrs['_val'] = el.value || el.data;
+
+			_.forEach(targetEl.attributes, attr => {
 				attrs[attr.name] = attr.value;
 			});
 
-			let ownText = _.filter(el.childNodes, el => el.nodeType === Node.TEXT_NODE)
-							.map(node => node.data);
+			let ownText = instance.selector.xpath('text()', targetEl).map(el => el.data);
 
-			attrs['nodeType'] = el.tagName.toLowerCase();
-			if (el.innerHTML) attrs['html'] = el.innerHTML;
-			if (ownText.length) attrs['ownText'] = ownText;
+			attrs['_tag'] = targetEl.tagName.toLowerCase();
+			if (targetEl.innerHTML) attrs['_html'] = el.innerHTML;
+			if (ownText.length) attrs['_text'] = ownText;
 
 			if (attrs['class'])
 				attrs['class'] = attrs['class'].replace(/\s*(ScrapeMate_\S+|selectorgadget_\S+)\s*/g, '');
@@ -214,7 +217,9 @@ const messageListeners = {
 
 	highlight: function (selector) {
 		this.unhighlight();
-		_.forEach(instance.selector.select(selector)[1], el => el.classList.add('ScrapeMate_highlighted'));
+		_.forEach(instance.selector.select(selector)[1], el => {
+			return instance.selector.asElementNode(el).classList.add('ScrapeMate_highlighted');
+		});
     },
 
 	unhighlight: function () {
@@ -230,8 +235,6 @@ function main () {
 		// reattach to our currently existing scope and tell it to shutdown
 		instance.bus.attach(window);
 		instance.bus.sendMessage('closeAll');
-		// instance.bus.detach(); TODO here
-		// delete instance.bus; // dev convenience
         return;
 	}
 
@@ -255,9 +258,7 @@ function main () {
 		// hook into SelectorGadget selector update to send updates to our sidebar
 		if (!SelectorGadget.prototype.sgMousedownOrig)
 			SelectorGadget.prototype.sgMousedownOrig = SelectorGadget.prototype.sgMousedown;
-		console.log('PROT')
 		SelectorGadget.prototype.sgMousedown = function (e) {
-			console.log('SG')
 			let ret = SelectorGadget.prototype.sgMousedownOrig.call(this, e);
 			let sel = selectorGadget.path_output_field.value;
 			instance.bus.sendMessage('selectorPicked', sel);

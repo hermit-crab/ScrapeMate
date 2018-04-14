@@ -13,7 +13,7 @@
 // }
 
 const htmlAttrImportance = [
-    'value', 'href', 'src', 'title', 'alt', 'name', 'html', 'ownText',
+    '_val', 'value', 'href', 'src', 'title', 'alt', 'name', 'html', '_text',
     attr => attr.startsWith('data-'),
     attr => !attr.startsWith('on')
 ]

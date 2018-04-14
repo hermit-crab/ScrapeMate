@@ -1,17 +1,102 @@
 
 var ScrapeMate = ScrapeMate || {};
 
-ScrapeMate.messageBus = {
-    // window <> childWindow messaging
+// Selectors
+////////////////////////////////////////////////////////////////////////////////
 
+ScrapeMate.selector = {
+
+    _dummy: document.createElement('a'),
+    _augmentedCssRx: /(.*)::(attr\([^\)]+\)|text\b)/,
+    _asArray: (arrayLike) => Array.prototype.slice.call(arrayLike),
+    _concatAll: (arrays) => Array.prototype.concat.apply([], arrays),
+
+    xpath: function (expr, parent) {
+        let iter = document.evaluate(expr, parent || document, null, XPathResult.ANY_TYPE, null);
+        let node = iter.iterateNext();
+        let nodes = [];
+
+        while (node) {
+            nodes.push(node);
+            node = iter.iterateNext();
+        }
+
+        return nodes;
+    },
+
+    css: function (sel, parent) {
+        if (!parent) parent = document;
+
+        let m = this._augmentedCssRx.exec(sel);
+
+        if (!m) {
+            return this._asArray(parent.querySelectorAll(sel));
+        } else {
+            sel = m[1];
+            let mod = m[2];
+            let path = './';
+
+            if (sel.endsWith(' *')) {
+                sel = sel.slice(0, -2);
+                path = './/';
+            }
+
+            let nodes = parent.querySelectorAll(sel);
+
+            if (mod === 'text') {
+                return this._concatAll(
+                            this._asArray(nodes).map(node => this.xpath(path + 'text()', node))
+                        );
+            } else {
+                path += '@' + mod.slice(5, -1);
+                return this._concatAll(
+                    this._asArray(nodes).map(node => this.xpath(path, node))
+                );
+            }
+        }
+    },
+
+    select: function (sel, parent) {
+        if (!parent) parent = document;
+
+        try {
+            return ['css', this._asArray(parent.querySelectorAll(sel))];
+        } catch (e) {}
+        try {
+            return ['xpath', this.xpath(sel, parent)];
+        } catch (e) {}
+
+        return [null, []];
+    },
+
+    getType: function (sel) {
+        try {
+            _dummy.querySelector(sel);
+            return 'css'
+        } catch (e) {}
+        try {
+            document.createExpression(sel);
+            return 'xpath'
+        } catch (e) {}
+
+        return null;
+    }
+}
+
+// Window <> childWindow messaging
+////////////////////////////////////////////////////////////////////////////////
+
+ScrapeMate.Bus = function () {};
+ScrapeMate.Bus.prototype = {
     // workflow:
+    // let bus = new Bus();
     // bus.attach(peer) // peer window (e.g. iframe.contentWindow)
     // bus.listeners['someEvent'] = function (data, respond) {
     //     if (data === 'hi') respond('hello');
     // };
 
     listeners: {},
-    debug: false,
+    debug: true,
 
     _counter: 0,
     _messages: {},

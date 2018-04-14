@@ -67,29 +67,6 @@ function enablePicker () {
 	instance.sgInstance = selectorGadget; // debug
 }
 
-function xpath (expr, parent) {
-    let iter = document.evaluate(expr, parent || document, null, XPathResult.ANY_TYPE, null);
-	let node = iter.iterateNext();
-	let nodes = [];
-
-    while (node) {
-        nodes.push(node);
-        node = iter.iterateNext();
-    }
-
-    return nodes;
-}
-
-function select (sel) {
-	try {
-		return _.slice(document.querySelectorAll(sel));
-	} catch (e) {}
-	try {
-		return xpath(sel);
-	} catch (e) {}
-	return false;
-}
-
 function loadResources() {
 	return new Promise(function (resolve) {
 		if (instance.loaded) {
@@ -117,7 +94,7 @@ function onKeyUp (e) {
 	if (selectorGadget) {
 		// delegate to iframe
 		e = _.pick(e, ['ctrlKey', 'shiftKey', 'altKey', 'metaKey', 'repeat', 'keyCode', 'key']);
-		instance.messageBus.sendMessage('keyUp', e);
+		instance.bus.sendMessage('keyUp', e);
 	}
 }
 
@@ -126,8 +103,8 @@ function initUI (cb) {
 	sidebarIFrame = injectElement(document.body, 'iframe', {src: SOURCES.iframe, id: 'ScrapeMate'});
 
 	// setup communication with sidebar
-	instance.messageBus.attach(sidebarIFrame.contentWindow);
-	instance.messageBus.listeners = messageListeners;
+	instance.bus.attach(sidebarIFrame.contentWindow);
+	instance.bus.listeners = messageListeners;
 }
 
 const messageListeners = {
@@ -137,14 +114,15 @@ const messageListeners = {
 	keyUp: onKeyUp,
 
 	closeAll: function () {
-		instance.messageBus.detach();
+		instance.bus.detach();
+		delete instance.bus; // dev convenience
 		window.removeEventListener('keyup', onKeyUp);
 		disablePicker();
 		document.body.removeChild(sidebarIFrame);
 	},
 
 	sidebarInitialized: function () {
-		if (jsDisabled) instance.messageBus.sendMessage('jsDisabled');
+		if (jsDisabled) instance.bus.sendMessage('jsDisabled');
 	},
 
 	togglePosition: function () {
@@ -166,7 +144,7 @@ const messageListeners = {
 				data[sel] = 0;
 				return;
 			}
-			let elems = select(sel);
+			let elems = instance.selector.select(sel)[1];
 			data[sel] = elems ? elems.length : -1;
 		})
 		respond(data);
@@ -196,7 +174,7 @@ const messageListeners = {
 			document.documentElement.innerHTML = text;
 			injectCSS(SOURCES.sgCss);
 			injectCSS(SOURCES.mainCss);
-			instance.messageBus.detach();
+			instance.bus.detach();
 			jsDisabled = true;
 			initUI();
 		});
@@ -207,7 +185,7 @@ const messageListeners = {
 
 		let selected;
 
-		selected = select(selector) || [];
+		selected = instance.selector.select(selector)[1];
 
 		let elems = [];
 		_.forEach(selected, el => {
@@ -236,7 +214,7 @@ const messageListeners = {
 
 	highlight: function (selector) {
 		this.unhighlight();
-		_.forEach(select(selector) || [], el => el.classList.add('ScrapeMate_highlighted'));
+		_.forEach(instance.selector.select(selector)[1], el => el.classList.add('ScrapeMate_highlighted'));
     },
 
 	unhighlight: function () {
@@ -248,14 +226,19 @@ const messageListeners = {
 
 function main () {
     if (document.querySelector('#ScrapeMate')) {
-		instance.messageBus.detach();
+		instance.bus.detach();
 		// reattach to our currently existing scope and tell it to shutdown
-		instance.messageBus.attach(window);
-		instance.messageBus.sendMessage('closeAll');
+		instance.bus.attach(window);
+		instance.bus.sendMessage('closeAll');
+		// instance.bus.detach(); TODO here
+		// delete instance.bus; // dev convenience
         return;
 	}
 
 	loadResources().then(function () {
+		// init bus to communicate with our ui
+		if (!instance.bus) instance.bus = new instance.Bus();
+
 		initUI();
 
 		// setup event handlers
@@ -272,10 +255,12 @@ function main () {
 		// hook into SelectorGadget selector update to send updates to our sidebar
 		if (!SelectorGadget.prototype.sgMousedownOrig)
 			SelectorGadget.prototype.sgMousedownOrig = SelectorGadget.prototype.sgMousedown;
+		console.log('PROT')
 		SelectorGadget.prototype.sgMousedown = function (e) {
+			console.log('SG')
 			let ret = SelectorGadget.prototype.sgMousedownOrig.call(this, e);
 			let sel = selectorGadget.path_output_field.value;
-			instance.messageBus.sendMessage('selectorPicked', sel);
+			instance.bus.sendMessage('selectorPicked', sel);
 			return ret;
 		};
 	});

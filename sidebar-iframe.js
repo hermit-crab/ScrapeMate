@@ -18,6 +18,8 @@ const htmlAttrImportance = [
     attr => !attr.startsWith('on')
 ]
 
+const bus = new ScrapeMate.Bus();
+
 // Utils
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -127,10 +129,10 @@ let vue = new Vue({
             });
 
             // setup communication with the page
-            ScrapeMate.messageBus.attach(window.parent);
+            bus.attach(window.parent);
             Object.keys(this).filter(k => k.startsWith('remote_')).forEach(k => {
                 let kk = k.slice('remote_'.length);
-                ScrapeMate.messageBus.listeners[kk] = this[k].bind(this);
+                bus.listeners[kk] = this[k].bind(this);
             });
 
             // let know we good
@@ -221,7 +223,7 @@ let vue = new Vue({
         },
         sendMessage: function (event, data) {
             // cooperate with our content script in the page
-            return ScrapeMate.messageBus.sendMessage(event, data);
+            return bus.sendMessage(event, data);
         },
         resetView: function () {
             this.disablePicker();

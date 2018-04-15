@@ -254,6 +254,14 @@ let vue = new Vue({
             t.lastLoc = parseUrl(_.last(t.urls) || this.loc.href);
             t.fields.push(this.makeField());
         },
+        cloneCurrentTemplate: function () {
+            let t = _.cloneDeep(this.template);
+            t.id = '_' + Date.now();
+            t.title += ' New';
+            this.template = t;
+            this.commitTemplate();
+            this.templateEdited = false;
+        },
         revertTemplate: function () {
             if (!confirm('Undo all edits made to this template?')) return;
             this.resetView();

@@ -20,11 +20,14 @@
             <div class="buttons">
                 <div>
                     <button class="blue plain-button fas fa-plus" @click="newTemplate" title="Create new template"></button>
+                    <button class="plain-button fas fa-arrows-alt-h" @click="sendMessage('togglePosition')"
+                        title="Toggle sidebar position (hotkey: arrow keys)"></button>
                     <button :disabled="jsDisabled" @click="sendMessage('disableJs')" class="plain-button fas fa-code"
-                            title="Disable JavaScript on this page (very naive method is used)"></button>
-                    <button class="plain-button fas fa-arrows-alt-h" @click="sendMessage('togglePosition')" title="Toggle sidebar position"></button>
-                    <button class="plain-button fas fa-pencil-alt" @click="openJsonEditor" title="Edit template as JSON"></button>
+                        title="Disable JavaScript on this page (very naive method is used)"></button>
                     <button class="plain-button fas fa-list" @click="openTemplatesView" title="Show all archived templates"></button>
+                    <button class="plain-button fas fa-pencil-alt" @click="openJsonEditor" title="Edit template as JSON"></button>
+                    <button class="plain-button far fa-clone" :disabled="!this.templates[this.template.id]" @click="cloneCurrentTemplate"
+                        title="Clone current template"></button>
                     <button class="plain-button fas fa-fast-backward" @click="revertTemplate" title="Undo all modifications" :disabled="!stashedTemplate || !templateEdited"></button>
                 </div>
                 <button class="red plain-button fas fa-times" @click="sendMessage('closeAll')"></button>

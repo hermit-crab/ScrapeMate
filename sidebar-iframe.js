@@ -523,7 +523,7 @@ let vue = new Vue({
                 Object.entries(data).forEach(([k,v]) => {
                     let f = this.makeField();
                     f.name = k;
-                    f.selector = v;
+                    f.selector = v.sel;
                     fields.push(f);
                 });
                 this.template.fields = fields;
@@ -539,7 +539,9 @@ let vue = new Vue({
         },
         resetJsonEditor: function () {
             this.jsonEditorIsReset = true;
-            let object = _.fromPairs(this.template.fields.slice(0, -1).map(f => [f.name, f.selector]));
+            let object = _.fromPairs(this.template.fields.slice(0, -1).map(f => {
+                return [f.name, {sel: f.selector, type: ScrapeMate.selector.getType(f.selector)}];
+            }));
             this.jsonEditorText = JSON.stringify(object, null, 2);
         },
         copyJsonEditor: function () {

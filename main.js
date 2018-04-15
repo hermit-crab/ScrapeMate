@@ -142,10 +142,10 @@ const messageListeners = {
         selectors.forEach(sel => {
 			if (!sel) {
 				data[sel] = 0;
-				return;
+			} else {
+				let [type,elems] = instance.selector.select(sel);
+				data[sel] = type ? elems.length : -1;
 			}
-			let elems = instance.selector.select(sel)[1];
-			data[sel] = elems ? elems.length : -1;
 		})
 		respond(data);
 	},
@@ -218,6 +218,7 @@ const messageListeners = {
 	highlight: function (selector) {
 		this.unhighlight();
 		_.forEach(instance.selector.select(selector)[1], el => {
+			// TODO:low there should probably be an easier call that skips whole big css augmentation deal when we dont need it
 			return instance.selector.asElementNode(el).classList.add('ScrapeMate_highlighted');
 		});
     },

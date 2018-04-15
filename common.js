@@ -1,5 +1,6 @@
+(function () {
 
-var ScrapeMate = ScrapeMate || {};
+if (!window.ScrapeMate) window.ScrapeMate = {};
 
 // Selectors
 ////////////////////////////////////////////////////////////////////////////////
@@ -27,34 +28,47 @@ ScrapeMate.selector = {
     css: function (sel, parent) {
         if (!parent) parent = document;
 
-        let m = this._augmentedCssRx.exec(sel);
+        let subsels = this._unaugmentCss(sel);
+        let normalUnionCss = subsels.map(ss => ss[0]).join(',');
+        let els = this._asArray(parent.querySelectorAll(normalUnionCss));
 
-        if (!m) {
-            return this._asArray(parent.querySelectorAll(sel));
-        } else {
-            sel = m[1];
-            let mod = m[2];
-            let path = './';
-
-            if (sel.endsWith(' *')) {
-                sel = sel.slice(0, -2);
-                path = './/';
-            }
-
-            let nodes = this._asArray(parent.querySelectorAll(sel));
-
-            if (mod === 'text') {
-                return this._concatAll(
-                            nodes.map(node => this.xpath(path + 'text()', node))
-                        );
-            } else {
-                let attr = mod.slice(5, -1).replace(/^[\s'"]+|[\s'"]+$/g, '');
-                path += '@' + attr;
-                return this._concatAll(
-                    nodes.map(node => this.xpath(path, node))
-                );
-            }
+        if (!subsels.every(ss => !ss[1])) {
+            // simple sel -> no modifiers
+            return els;
         }
+
+        // TODO:low, the bellow is pretty crazy, what we actually need is a reliable css->xpath transpiler
+
+        let newEls = new Set();
+        for (let el of els) {
+            let modded = false;
+            for (let [sel,mod] of subsels) {
+                if (!mod) continue;
+                if (!el.matches(sel)) continue;
+
+                modded = true;
+                // TODO:low perhaps if it doesn't include first it doesn't include any further
+                // which means I should break at that point
+                this.xpath(mod, el).forEach(e => newEls.add(e));
+            }
+            if (!modded) newEls.add(el);
+        }
+
+        // TODO:low get terminology straight els/elements are for Node.ELEMENT_TYPE
+        // nodes for mix of els/texts/attrs
+
+        return Array.from(newEls).sort((a,b) => {
+            if (a.nodeType !== Node.TEXT_NODE) a = this.asElementNode(a);
+            if (b.nodeType !== Node.TEXT_NODE) b = this.asElementNode(b);
+            let aPath = this._getElPath(a), bPath = this._getElPath(b);
+            for (let i = 0; i < Math.min(aPath.length, bPath.length); i++) {
+                let aa = aPath[i], bb = bPath[i];
+                if (aa === bb) continue;
+                let commonParent = aPath[i-1];
+                let childNodes = this._asArray(commonParent.childNodes);
+                return childNodes.indexOf(bb) - childNodes.indexOf(aa);
+            }
+        }).reverse();
     },
 
     select: function (sel, parent) {
@@ -86,6 +100,79 @@ ScrapeMate.selector = {
             return el;
         else
             return el.ownerElement || el.parentElement || el.parentNode;
+    },
+
+    _getElPath: function (el) {
+        // -> [parent, parent, ..., el]
+
+        let path = [el];
+        while (true) {
+            let parent = path[0].parentElement;
+            if (!parent) break;
+            path.unshift(parent);
+        }
+        return path;
+    },
+
+    _unaugmentCss: function (sel) {
+        // 'div a::text, b' => [['div a', './text()'], ['b', null]]
+
+        return this._parseCsvLike(sel).map(s => {
+            let m = this._augmentedCssRx.exec(s);
+            if (!m) {
+                return [s, null];
+            } else {
+                let sel = m[1], mod = m[2];
+                let path = './';
+
+                if (sel.endsWith(' *')) {
+                    sel = sel.slice(0, -2);
+                    path = './/';
+                }
+
+                if (mod === 'text') mod = path + 'text()'
+                else {
+                    let attr = mod.slice(5, -1).replace(/^[\s'"]+|[\s'"]+$/g, '');
+                    mod = path + '@' + attr;
+                }
+
+                return [sel, mod];
+            }
+        });
+    },
+
+    _parseCsvLike: function (str) {
+        // 'div a[name="te,st"], b' => ['div a[name="te,st"]', ' b']
+
+        // simple cases
+        if (!str.includes(',')) {
+            return [str];
+        } else if (!/['"]/.test(str)) {
+            return str.split(',');
+        }
+
+        // difficult case
+        let inQuotes = false; // will hold either false, ' or "
+        let justEscaped = false;
+        let result = [];
+        let lastSplitIdx = 0;
+        for (let i = 0; i < str.length; i++) {
+            let c = str[i];
+            if (c === ',' && !inQuotes) {
+                result.push(str.slice(lastSplitIdx, i));
+                lastSplitIdx = i+1;
+            } else if (justEscaped) {
+                justEscaped = false;
+            } else if (c === '\\') {
+                justEscaped = true;
+            } else if (inQuotes && inQuotes === c) {
+                inQuotes = false;
+            } else if (!inQuotes && c === "'" || c === '"') {
+                inQuotes = c;
+            }
+        }
+        result.push(str.slice(lastSplitIdx));
+        return result;
     }
 }
 
@@ -139,7 +226,7 @@ ScrapeMate.Bus.prototype = {
         }
     },
     _onMessage: function (e) {
-        // TODO:low make sure it's from peer
+        // TODO:medium make sure it's from peer
 
         if (e.data.length === 3) {
             // received an event
@@ -161,3 +248,5 @@ ScrapeMate.Bus.prototype = {
         }
     }
 };
+
+})();

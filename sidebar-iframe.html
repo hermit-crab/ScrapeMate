@@ -6,7 +6,9 @@
     <script src="vendor/lodash.min.js"></script>
     <script src="common.js"></script>
     <link rel="stylesheet" type="text/css" href="vendor/reset.css">
-    <link rel="stylesheet" type="text/css" href="vendor/essential-regular-styles.css">
+    <link rel="stylesheet" type="text/css" href="vendor/fa-solid.css">
+    <link rel="stylesheet" type="text/css" href="vendor/fa-regular.css">
+    <link rel="stylesheet" type="text/css" href="vendor/fontawesome.css">
     <link rel="stylesheet" type="text/css" href="sidebar-iframe.css">
 </head>
 <body>
@@ -17,15 +19,15 @@
         <div id="head-controls">
             <div class="buttons">
                 <div>
-                    <button class="blue plain-button" @click="newTemplate" title="Create new template">+</button>
-                    <button :disabled="jsDisabled" @click="sendMessage('disableJs')" class="plain-button"
-                            title="Disable JavaScript on this page (very naive method is used)">js</button>
-                    <button class="plain-button" @click="sendMessage('togglePosition')" title="Toggle sidebar position">‹ ›</button>
-                    <button class="plain-button" @click="openJsonEditor" title="Edit template as JSON">{}</button>
-                    <button class="plain-button" @click="openTemplatesView" title="Show all archived templates">list</button>
-                    <button class="plain-button" @click="revertTemplate" title="Undo all modifications" :disabled="!stashedTemplate || !templateEdited">⏪</button>
+                    <button class="blue plain-button fas fa-plus" @click="newTemplate" title="Create new template"></button>
+                    <button :disabled="jsDisabled" @click="sendMessage('disableJs')" class="plain-button fas fa-code"
+                            title="Disable JavaScript on this page (very naive method is used)"></button>
+                    <button class="plain-button fas fa-arrows-alt-h" @click="sendMessage('togglePosition')" title="Toggle sidebar position"></button>
+                    <button class="plain-button fas fa-pencil-alt" @click="openJsonEditor" title="Edit template as JSON"></button>
+                    <button class="plain-button fas fa-list" @click="openTemplatesView" title="Show all archived templates"></button>
+                    <button class="plain-button fas fa-fast-backward" @click="revertTemplate" title="Undo all modifications" :disabled="!stashedTemplate || !templateEdited"></button>
                 </div>
-                <button class="red plain-button" @click="sendMessage('closeAll')">✕</button>
+                <button class="red plain-button fas fa-times" @click="sendMessage('closeAll')"></button>
             </div>
             <div class="title">
                 <label for="template-title" class="left">Template: </label>
@@ -73,21 +75,21 @@
                     <div class="top">
                         <input v-model.trim="field.name" @input="onFieldNameInput(field)" placeholder="field name">
                         <button @click="onPickerClick(field, $event)"
-                                class="orange plain-button icon-essential-regular-42-pen"
+                                class="orange plain-button fas fa-magic"
                                 title="Start picker"
                                 @keypress.prevent>
                                 </button>
                         <button :disabled="i === fields.length-1"
-                                class="plain-button icon-essential-regular-31-document-copy"
+                                class="plain-button far fa-clone"
                                 title="Clone field"
                                 @click="cloneField(i)">
                                 </button>
                         <button :disabled="i === fields.length-1"
-                                class="plain-button icon-essential-regular-25-circle-blank"
+                                class="plain-button far fa-circle"
                                 title="Reset selector"
                                 @click="resetSelector(field)">
                                 </button>
-                        <button class="plain-button icon-essential-regular-12-minus-big"
+                        <button class="plain-button fas fa-minus"
                                 :disabled="i === fields.length-1"
                                 @click="removeField(i)">
                                 </button>

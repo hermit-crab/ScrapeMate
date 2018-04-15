@@ -11,7 +11,7 @@
 .plain-button {
     padding: 5px 10px;
     font-size: 13px;
-    line-height: 12px;
+    line-height: 1;
     color: #fff;
     text-shadow: 0 -1px 0 rgba(0,0,0,0.25);
     background-color: #2f2f2f;
@@ -66,6 +66,14 @@
     display: none;
 }
 
+.fas, .far {
+    text-shadow: none;
+    color: #ffffffe7;
+}
+.far {
+    font-weight: 400;
+}
+
 /* head-controls */
 
 #head-controls {
@@ -76,10 +84,6 @@
 #head-controls div.buttons {
 	display: flex;
 	justify-content: space-between;
-}
-
-#head-controls button {
-    font-weight: bold;
 }
 
 #head-controls div.title {
@@ -142,10 +146,6 @@
 
 #field-list .field .top input {
 	width: 100%;
-}
-
-#field-list .field .top button {
-	font-weight: bold;
 }
 
 #field-list .field .bottom {

@@ -4,18 +4,21 @@ Activity stack:
 Features/issues priority:
 
 High:
+
 Implement testing capabilities:
     medium - sweep over selected templates downloading and testing them on their respective pages
     medium - allow to specify and edit template matching pages
     medium - implement some sorta contracts to verify templates
 hard - nested selectors
+easy - json editor fields sorted
 hard - visual intuitive expression editor:
     full element(s) path shown, clicking on parents, their classes, id's and other attributes to include inside expression
+very hard - automatic structure discovery by matching html trees of multiple similarly structured pages (e.g. product pages on the same website)
 
 Medium:
-hard - rework styles into something sensible
 easy - dont allow selecting ourselves / selectorgadget controls
-easy - syntax highlight html and json inside data control tab
+easy - syntax highlight html and json inside data control tab and in an editor
+medium - make css-to-xpath button
 medium - persist sidebar between clicks (storage (problematic since storage is accessed from iframe))
 JS toggling:
     medium - enabling would be by saving state, reloading tab and then extension (from state stashed in sessionStorage?)
@@ -32,6 +35,8 @@ medium - some kinda way to let specify target attribute
 very hard - instead of making any page/css mutations do all highlighting and picking over a click through overlay div
 
 Low:
+easy - sort templates upper to lower domain levels
+hard - rework styles into something sensible
 easy - template shift select many
 medium - highlight target element when hovered over in a .data.many control tab
 hard - tweak styles for firefox

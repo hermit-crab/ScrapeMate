@@ -103,9 +103,11 @@ let vue = new Vue({
 
         jsDisabled: false,
 
+        // TODO:low just one var - currentView
         jsonEditorView: false,
         controlTabsView: false,
         templatesView: false,
+        confView: false,
 
         jsonEditorText: '',
         jsonEditorIsReset: true,
@@ -230,6 +232,7 @@ let vue = new Vue({
             this.controlTabsView = false;
             this.jsonEditorView = false;
             this.templatesView = false;
+            this.confView = false;
         },
         getAllSelectors: function (templates) {
             return _.chain(templates).values()

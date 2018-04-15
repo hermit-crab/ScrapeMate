@@ -1,7 +1,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- <script src="vendor/vue.js"></script> -->
     <script src="vendor/vue.js"></script>
     <script src="vendor/lodash.min.js"></script>
     <script src="common.js"></script>
@@ -12,7 +11,7 @@
     <link rel="stylesheet" type="text/css" href="sidebar-iframe.css">
 </head>
 <body>
-    <div id="sidebar" style="display: none;">
+    <div id="sidebar" style="display: none">
 
         <!-- Head Controls -->
 
@@ -21,7 +20,7 @@
                 <div>
                     <button class="blue plain-button fas fa-plus" @click="newTemplate" title="Create new template"></button>
                     <button class="plain-button fas fa-arrows-alt-h" @click="sendMessage('togglePosition')"
-                        title="Toggle sidebar position (hotkey: arrow keys)"></button>
+                        title="Toggle sidebar position"></button>
                     <button :disabled="jsDisabled" @click="sendMessage('disableJs')" class="plain-button fas fa-code"
                         title="Disable JavaScript on this page (very naive method is used)"></button>
                     <button class="plain-button fas fa-list" @click="openTemplatesView" title="Show all archived templates"></button>
@@ -30,6 +29,7 @@
                         title="Clone current template"></button>
                     <button class="plain-button fas fa-fast-backward" @click="revertTemplate" title="Undo all modifications" :disabled="!stashedTemplate || !templateEdited"></button>
                 </div>
+                <button class="conf plain-button fas fa-cog" title="Options/Info" @click="confView = true"></button>
                 <button class="red plain-button fas fa-times" @click="sendMessage('closeAll')"></button>
             </div>
             <div class="title">
@@ -37,32 +37,6 @@
                 <input class="template-title" id="template-title" @input="onTemplateTitleInput" v-model="template.title"/>
             </div>
         </div>
-
-        <!-- Templates List -->
-
-        <modal-overlay @click="templatesView = false" v-if="templatesView">
-            <div id="templates-list">
-                <div class="buttons">
-                    <label class="custom-file-picker plain-button" title="Import new templates from file">
-                        <input type="file" @change="importTemplates($event)"/>import
-                    </label>
-                    <div class="sep"></div>
-                    <button class="plain-button" @click="exportTemplates" :disabled="!selectedTemplates.length" title="Save templates to file">export</button>
-                    <button class="plain-button" @click="removeSelectedTemplates" :disabled="!selectedTemplates.length">delete</button>
-                    <button class="plain-button" @click="selectAllTemplates" >{{selectedTemplates.length ? 'none' : 'all'}}</button>
-                </div>
-                <div class="list">
-                    <div v-for="(t, i) in sortedTemplates"
-                        :title="t.title" :key="t.id"
-                        @click="selectTemplate(t)"
-                        @dblclick="pickTemplate(t)"
-                        :class="{selected:_.includes(selectedTemplates, t.id)}" class="template">
-                        <div class="title">{{ t.title }}</div>
-                        <div class="stat" :class="[templateStat[i].matchPower]">{{ templateStat[i].selCount }}</div>
-                    </div>
-                </div>
-            </div>
-        </modal-overlay>
 
         <!-- Fields List -->
 
@@ -112,9 +86,46 @@
             </div>
         </div>
 
+        <!-- Configuration View -->
+
+        <modal-overlay @click="resetView" v-if="confView">
+                <div id="conf">
+                        <b>Hotkeys:</b><br>
+                        Left/Right Arrow Keys - toggle sidebar position.<br>
+                        Backspace, Delete - (in picking mode) reset current selector.<br>
+                        Esc - dismiss current popup or turn off picking mode.<br>
+                </div>
+        </modal-overlay>
+
+        <!-- Templates List -->
+
+        <modal-overlay @click="resetView" v-if="templatesView">
+            <div id="templates-list">
+                <div class="buttons">
+                    <label class="custom-file-picker plain-button" title="Import new templates from file">
+                        <input type="file" @change="importTemplates($event)"/>import
+                    </label>
+                    <div class="sep"></div>
+                    <button class="plain-button" @click="exportTemplates" :disabled="!selectedTemplates.length" title="Save templates to file">export</button>
+                    <button class="plain-button" @click="removeSelectedTemplates" :disabled="!selectedTemplates.length">delete</button>
+                    <button class="plain-button" @click="selectAllTemplates" >{{selectedTemplates.length ? 'none' : 'all'}}</button>
+                </div>
+                <div class="list">
+                    <div v-for="(t, i) in sortedTemplates"
+                        :title="t.title" :key="t.id"
+                        @click="selectTemplate(t)"
+                        @dblclick="pickTemplate(t)"
+                        :class="{selected:_.includes(selectedTemplates, t.id)}" class="template">
+                        <div class="title">{{ t.title }}</div>
+                        <div class="stat" :class="[templateStat[i].matchPower]">{{ templateStat[i].selCount }}</div>
+                    </div>
+                </div>
+            </div>
+        </modal-overlay>
+
         <!-- Template Json Editor -->
 
-        <modal-overlay @click="jsonEditorView = false" v-if="jsonEditorView">
+        <modal-overlay @click="resetView" v-if="jsonEditorView">
             <div id="json-editor">
                 <div class="buttons">
                     <button class="plain-button" @click="copyJsonEditor">copy</button>

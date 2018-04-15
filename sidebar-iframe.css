@@ -46,6 +46,10 @@
     transform: none;
 }
 
+b {
+    font-weight: bold;
+}
+
 #sidebar input:not([type]) {
     background-color: rgba(0, 0, 0, 0.23);
     border-radius: 2px;
@@ -84,6 +88,19 @@
 #head-controls div.buttons {
 	display: flex;
 	justify-content: space-between;
+}
+
+#head-controls div.buttons button.conf {
+	border: none;
+	background-color: transparent;
+	font-size: 90%;
+	margin-left: auto;
+	color: #0000005c;
+	outline: none;
+}
+#head-controls div.buttons button.conf:hover {
+	box-shadow: none;
+	color: #0000008f;
 }
 
 #head-controls div.title {
@@ -317,6 +334,19 @@
     align-content: flex-start;
 }
 
+/* help/conf */
+
+#conf {
+	padding: 8px;
+    border-radius: 3px;
+	margin-top: 50px;
+    background-color: #d8d8d8;
+    height: 70%;
+    width: 90vw;
+    line-height: 1.3;
+    color: #000000db;
+}
+
 /* control-tabs */
 
 #control-tabs {
@@ -436,6 +466,7 @@
 	font-size: 104%;
 	cursor: pointer;
 }
+
 #control-tabs .data.many button:hover {
 	background-color: #00800045;
 }

@@ -144,6 +144,10 @@
 	width: 100%;
 }
 
+#field-list .field .top button {
+	font-weight: bold;
+}
+
 #field-list .field .bottom {
 	display: flex;
 	padding-right: 13px;

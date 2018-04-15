@@ -90,6 +90,13 @@
 
         <modal-overlay @click="resetView" v-if="confView">
                 <div id="conf">
+                        <b>Data Tab:</b><br>
+                        In picking mode data preview show a few special properties alongside element real attributes.<br>
+                        Those are:<br>
+                        _html - element inner html.<br>
+                        _tag - element tag name (e.g. "a", "div", "span").<br>
+                        _text - list of element direct texts (e.g. <span style="color: #af4356">&lt;span&gt;hello &lt;b&gt;to&lt;/b&gt; you&lt;/span&gt;</span> will be ["hello ", " you"]).<br>
+                        _val - value under special nonstandard css pseudo elements if used (e.g. "div a::attr(href)"), these are supported by scrapy for example.<br><br>
                         <b>Hotkeys:</b><br>
                         Left/Right Arrow Keys - toggle sidebar position.<br>
                         Backspace, Delete - (in picking mode) reset current selector.<br>

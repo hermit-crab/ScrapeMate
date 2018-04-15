@@ -104,12 +104,12 @@ ScrapeMate.selector = {
 
     getType: function (sel) {
         try {
-            this.css(sel, _dummy);
-            return 'css'
+            this.css(sel, this._dummy);
+            return 'css';
         } catch (e) {}
         try {
-            this.xpath(sel, _dummy);
-            return 'xpath'
+            this.xpath(sel, this._dummy);
+            return 'xpath';
         } catch (e) {}
 
         return null;

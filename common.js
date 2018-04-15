@@ -51,7 +51,7 @@ ScrapeMate.selector = {
         let normalUnionCss = subsels.map(ss => ss[0]).join(',');
         let els = this._asArray(parent.querySelectorAll(normalUnionCss));
 
-        if (!subsels.every(ss => !ss[1])) {
+        if (subsels.every(ss => !ss[1])) {
             // simple sel -> no modifiers
             return els;
         }

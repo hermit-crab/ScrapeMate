@@ -8,12 +8,19 @@ if (!window.ScrapeMate) window.ScrapeMate = {};
 ScrapeMate.selector = {
 
     _dummy: document.createElement('a'),
-    _augmentedCssRx: /(.*)::(attr\([^\)]+\)|text\b)/,
+
     _asArray: (arrayLike) => Array.prototype.slice.call(arrayLike),
     _concatAll: (arrays) => Array.prototype.concat.apply([], arrays),
 
+    // scrapy like functionality
+    _augmentedCssRx: /(.*)::(attr\([^\)]+\)|text\b)/, // e.g. "div a::attr(href)" css augmented selector
+    _hasClassRx: /has-class(\((?:\s*(?:'[^']*'|"[^"]*")\s*(?:,\s*|\)))*)/g, // e.g. "has-class('wrapper')" xpath function
+
     xpath: function (expr, parent) {
-        let iter = document.evaluate(expr, parent || document, null, XPathResult.ANY_TYPE, null);
+        expr = this._toGenericXpath(expr);
+
+        let iter = document.evaluate(expr, parent || document, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
+        // TODO:low support constant xpath types
         let node = iter.iterateNext();
         let nodes = [];
 
@@ -23,6 +30,18 @@ ScrapeMate.selector = {
         }
 
         return nodes;
+    },
+
+    _toGenericXpath: function (expr) {
+        return expr.replace(this._hasClassRx, (f, g1) => {
+            g1 = g1.slice(1, -1);
+
+            // TODO:low this will trim the space within quotes too which is not desirable
+            let classes = g1.split(',').map(s => this._trimWithQuotes(s));
+            let conds = classes.map(s => `contains(concat(" ", normalize-space(@class), " "), " ${s} ")`);
+            let joinedCond = '(@class and ' + conds.join(' and ') + ')';
+            return joinedCond;
+        });
     },
 
     css: function (sel, parent) {
@@ -37,7 +56,7 @@ ScrapeMate.selector = {
             return els;
         }
 
-        // TODO:low, the bellow is pretty crazy, what we actually need is a reliable css->xpath transpiler
+        // TODO:low, the bellow is pretty crazy, what we really need is a reliable css->xpath transpiler
 
         let newEls = new Set();
         for (let el of els) {
@@ -57,6 +76,7 @@ ScrapeMate.selector = {
         // TODO:low get terminology straight els/elements are for Node.ELEMENT_TYPE
         // nodes for mix of els/texts/attrs
 
+        // sort elements way they appear in the document
         return Array.from(newEls).sort((a,b) => {
             if (a.nodeType !== Node.TEXT_NODE) a = this.asElementNode(a);
             if (b.nodeType !== Node.TEXT_NODE) b = this.asElementNode(b);
@@ -84,11 +104,11 @@ ScrapeMate.selector = {
 
     getType: function (sel) {
         try {
-            _dummy.querySelector(sel);
+            this.css(sel, _dummy);
             return 'css'
         } catch (e) {}
         try {
-            document.createExpression(sel);
+            this.xpath(sel, _dummy);
             return 'xpath'
         } catch (e) {}
 
@@ -117,7 +137,7 @@ ScrapeMate.selector = {
     _unaugmentCss: function (sel) {
         // 'div a::text, b' => [['div a', './text()'], ['b', null]]
 
-        return this._parseCsvLike(sel).map(s => {
+        return this._splitCsvLike(sel).map(s => {
             let m = this._augmentedCssRx.exec(s);
             if (!m) {
                 return [s, null];
@@ -132,7 +152,7 @@ ScrapeMate.selector = {
 
                 if (mod === 'text') mod = path + 'text()'
                 else {
-                    let attr = mod.slice(5, -1).replace(/^[\s'"]+|[\s'"]+$/g, '');
+                    let attr = this._trimWithQuotes(mod.slice(5, -1));
                     mod = path + '@' + attr;
                 }
 
@@ -141,7 +161,11 @@ ScrapeMate.selector = {
         });
     },
 
-    _parseCsvLike: function (str) {
+    _trimWithQuotes: function (str) {
+        return str.replace(/^[\s'"]+|[\s'"]+$/g, '');
+    },
+
+    _splitCsvLike: function (str) {
         // 'div a[name="te,st"], b' => ['div a[name="te,st"]', ' b']
 
         // simple cases

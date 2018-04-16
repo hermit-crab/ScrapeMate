@@ -4,12 +4,11 @@ Activity stack:
 Features/issues priority:
 
 High:
-
+hard - nested selectors
 Implement testing capabilities:
     medium - sweep over selected templates downloading and testing them on their respective pages
     medium - allow to specify and edit template matching pages
     medium - implement some sorta contracts to verify templates
-hard - nested selectors
 easy - json editor fields sorted
 hard - visual intuitive expression editor:
     full element(s) path shown, clicking on parents, their classes, id's and other attributes to include inside expression
@@ -37,6 +36,7 @@ very hard - instead of making any page/css mutations do all highlighting and pic
 Low:
 easy - sort templates upper to lower domain levels
 hard - rework styles into something sensible
+medium - link patterns mode
 easy - template shift select many
 medium - highlight target element when hovered over in a .data.many control tab
 hard - tweak styles for firefox

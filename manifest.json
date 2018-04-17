@@ -1,38 +1,29 @@
 {
-  "background": {"scripts": ["background.js"]},
-  "web_accessible_resources": [
-    "main.js",
-    "main.css",
-    "common.js",
-    "vendor/*",
-    "sidebar-iframe.html"
-  ],
-  "browser_action": {
-    "default_icon": {
-      "16": "icons/16.png",
-      "24": "icons/24.png",
-      "32": "icons/32.png",
-      "48": "icons/48.png",
-      "64": "icons/64.png",
-      "128": "icons/128.png"
-    },
-    "default_title": "ScrapeMate Beta"
-  },
-  "name": "ScrapeMate Beta",
-  "description": "Scraping assistant tool. Editing and maintaining CSS/XPath selectors across webpages.",
-  "homepage_url": "https://github.com/Unknowny/ScrapeMate",
-  "icons": {
-    "16": "icons/16.png",
-    "24": "icons/24.png",
-    "32": "icons/32.png",
-    "48": "icons/48.png",
-    "64": "icons/64.png",
-    "128": "icons/128.png"
-  },
-  "sandbox": {
-    "pages": ["sidebar-iframe.html"]
-  },
-  "permissions": ["tabs", "http://*/*", "https://*/*", "storage"],
-  "version": "0.1",
-  "manifest_version": 2
+	"background": {"scripts": ["background.js"]},
+	"web_accessible_resources": ["sidebar.html", "content.css", "vendor/selectorgadget_combined.css"],
+	"browser_action": {
+		"default_icon": {
+			"16": "icons/16.png",
+			"24": "icons/24.png",
+			"32": "icons/32.png",
+			"48": "icons/48.png",
+			"64": "icons/64.png",
+			"128": "icons/128.png"
+		},
+		"default_title": "ScrapeMate Beta"
+	},
+	"name": "ScrapeMate Beta",
+	"description": "Scraping assistant tool. Editing and maintaining CSS/XPath selectors across webpages.",
+	"homepage_url": "https://github.com/Unknowny/ScrapeMate",
+	"icons": {
+		"16": "icons/16.png",
+		"24": "icons/24.png",
+		"32": "icons/32.png",
+		"48": "icons/48.png",
+		"64": "icons/64.png",
+		"128": "icons/128.png"
+	},
+	"permissions": ["tabs", "<all_urls>", "storage"],
+	"version": "0.1",
+	"manifest_version": 2
 }

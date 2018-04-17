@@ -1,3 +1,8 @@
+import Vue from 'vue'
+import _ from 'lodash'
+import MainComponent from './sidebar-main.vue'
+import Bus from './bus.js'
+import Selector from './selector.js'
 
 // Template - main data model for this application:
 // {
@@ -18,7 +23,7 @@ const htmlAttrImportance = [
     attr => !attr.startsWith('on')
 ]
 
-const bus = new ScrapeMate.Bus();
+const bus = new Bus();
 
 // Utils
 ////////////////////////////////////////////////////////////////////////////////
@@ -37,60 +42,11 @@ function no3w (string) {
     return string.replace(/^www\./, '');
 }
 
-// Storage
-////////////////////////////////////////////////////////////////////////////////
-
-const STORAGE_PREFIX = 'ScrapeMate_'; // in case we use localStorage (bookmarklet mode)
-
-// TODO:low notify of any storage errors
-
-function loadStorage () {
-    return new Promise(function (resolve) {
-        if (location.href.startsWith('chrome-extension://')) {
-            chrome.runtime.sendMessage(['loadStorage'], resolve);
-        } else {
-            let storage = {};
-            for (let [k,v] of Object.entries(localStorage)) {
-                if (!k.startsWith(STORAGE_PREFIX)) continue;
-                let kk = k.slice(STORAGE_PREFIX.length)
-                storage[kk] = JSON.parse(v);
-            }
-            resolve(storage);
-        }
-    });
-}
-
-function saveStorage (items) {
-    // items - an object which gives each key/value pair to update storage with.
-    // Any other key/value pairs in storage will not be affected.
-
-    if (location.href.startsWith('chrome-extension://')) {
-        chrome.runtime.sendMessage(['saveStorage', items]);
-    } else {
-        Object.entries(items).forEach(([k,v]) => {
-            localStorage[STORAGE_PREFIX+k] = JSON.stringify(v);
-        });
-    }
-}
-
-function removeStorageKeys (keys) {
-    if (location.href.startsWith('chrome-extension://')) {
-        chrome.runtime.sendMessage(['removeStorageKeys', keys]);
-    } else {
-        keys.forEach(k => localStorage.removeItem(STORAGE_PREFIX+k));
-    }
-}
-
 // Main
 ////////////////////////////////////////////////////////////////////////////////
 
-Vue.component('modal-overlay', {
-    template: '<div class="modal-overlay" v-on:click.self="$emit(\'click\')"><slot></slot></div>'
-});
-
-let vue = new Vue({
-    el: '#sidebar',
-    data: {
+export default {
+    data () { return {
         template: {}, // current template
         templates: [], // all templates
         loc: null, // page location
@@ -117,24 +73,24 @@ let vue = new Vue({
         selElemAttrs: [], // [[[attrName, attrVale]...], ...]
         selElemUniqAttrs: [], // [attrName, ...]
         attrToShow: null
-    },
+    }},
     created: function () {
-        loadStorage().then(storage => {
+        // setup communication with the page
+        bus.attach(window.parent);
+        Object.keys(this).filter(k => k.startsWith('remote_')).forEach(k => {
+            let kk = k.slice('remote_'.length);
+            bus.listeners[kk] = this[k].bind(this);
+        });
+
+        this.sendMessage('loadStorage').then(storage => {
 
             // retrieve templates and config
-            options = storage['options'] || {};
+            let options = storage['options'] || {};
             Object.entries(storage).forEach(([k,v]) => {
                 if (!k.startsWith('_')) return;
                 let [id, t] = [k, v];
                 this.augmentTemplate(t, id);
                 Vue.set(this.templates, id, t);
-            });
-
-            // setup communication with the page
-            bus.attach(window.parent);
-            Object.keys(this).filter(k => k.startsWith('remote_')).forEach(k => {
-                let kk = k.slice('remote_'.length);
-                bus.listeners[kk] = this[k].bind(this);
             });
 
             // let know we good
@@ -291,7 +247,7 @@ let vue = new Vue({
         },
         removeSelectedTemplates: function () {
             this.templates = _.omit(this.templates, this.selectedTemplates);
-            removeStorageKeys(this.selectedTemplates);
+            this.sendMessage('removeStorageKeys', this.selectedTemplates);
             this.selectedTemplates = [];
         },
         selectTemplate: function (t) {
@@ -311,7 +267,7 @@ let vue = new Vue({
             Vue.set(this.templates, this.template.id, this.template)
             let template = _.pick(this.template, ['title', 'fields', 'urls']);
             template.fields = template.fields.slice(0, -1); // remove ghost field
-            saveStorage({[this.template.id]: template});
+            this.sendMessage('saveStorage', {[this.template.id]: template});
         },
         findTemplate: function () {
             // looks for template matching this page
@@ -460,7 +416,7 @@ let vue = new Vue({
         // Import/Export
 
         exportTemplates: function () {
-            loadStorage().then(storage => {
+            this.sendMessage('loadStorage').then(storage => {
                 let templates = _.pick(storage, this.selectedTemplates);
                 let content = JSON.stringify(templates, null, 2);
                 this.sendMessage('saveText', content);
@@ -504,7 +460,7 @@ let vue = new Vue({
                     console.log(`ScrapeMate will create ${id}:`, tt)
                 return [id, tt];
             });
-            saveStorage(_.fromPairs(templates));
+            this.sendMessage('saveStorage', _.fromPairs(templates));
             templates.forEach(([id,t]) => {
                 this.augmentTemplate(t, id);
                 Vue.set(this.templates, id, t);
@@ -543,7 +499,7 @@ let vue = new Vue({
         resetJsonEditor: function () {
             this.jsonEditorIsReset = true;
             let object = _.fromPairs(this.template.fields.slice(0, -1).map(f => {
-                return [f.name, {sel: f.selector, type: ScrapeMate.selector.getType(f.selector)}];
+                return [f.name, {sel: f.selector, type: Selector.getType(f.selector)}];
             }));
             this.jsonEditorText = JSON.stringify(object, null, 2);
         },
@@ -552,4 +508,4 @@ let vue = new Vue({
             document.execCommand('copy');
         },
     }
-});
+};

@@ -20,7 +20,10 @@
 
 .ScrapeMate_highlighted {
     outline: 2px #6495ed dashed !important;
-    box-shadow: 0 0 100px #ffff009f inset !important;
+    box-shadow: 0 0 100px #ffff00b5 inset !important;
+}
+img.ScrapeMate_highlighted, .ScrapeMate_highlighted > * {
+    opacity: .8;
 }
 
 .selectorgadget_suggested {

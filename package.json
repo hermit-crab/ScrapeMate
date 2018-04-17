@@ -1,0 +1,33 @@
+{
+	"name": "ScrapeMate",
+	"version": "0.1.0",
+	"description": "Scraping assistant tool. Editing and maintaining CSS/XPath selectors across webpages.",
+	"main": "main.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build": "webpack",
+		"watch": "webpack --watch"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Unknowny/ScrapeMate.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/Unknowny/ScrapeMate/issues"
+	},
+	"homepage": "https://github.com/Unknowny/ScrapeMate#readme",
+	"devDependencies": {
+		"copy-webpack-plugin": "^4.5.1",
+		"vue-loader": "^14.2.2",
+		"vue-template-compiler": "^2.5.16",
+		"webpack": "^4.5.0",
+		"webpack-cli": "^2.0.14"
+	},
+	"dependencies": {
+		"lodash": "^4.17.5",
+		"vue": "^2.5.16"
+	}
+}

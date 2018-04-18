@@ -19,7 +19,7 @@
                 <button class="plain-button fas fa-fast-backward" @click="revertTemplate" title="Undo all modifications" :disabled="!stashedTemplate || !templateEdited"></button>
             </div>
             <button class="conf plain-button fas fa-cog" title="Options/Info" @click="confView = true"></button>
-            <button class="red plain-button fas fa-times" @click="sendMessage('closeAll')"></button>
+            <button class="red plain-button fas fa-times" @click="sendMessage('close')"></button>
         </div>
         <div class="title">
             <label for="template-title" class="left">Template: </label>
@@ -79,19 +79,23 @@
     <!-- Configuration View -->
 
     <div class="modal-overlay" @click.self="resetView" v-if="confView">
-            <div id="conf">
-                    <b>Data Tab:</b><br>
-                    In picking mode data preview show a few special properties alongside element real attributes.<br>
-                    Those are:<br>
-                    _html - element inner html.<br>
-                    _tag - element tag name (e.g. "a", "div", "span").<br>
-                    _text - list of element direct texts (e.g. <span style="color: #af4356">&lt;span&gt;hello &lt;b&gt;to&lt;/b&gt; you&lt;/span&gt;</span> will be ["hello ", " you"]).<br>
-                    _val - value under special nonstandard css pseudo elements if used (e.g. "div a::attr(href)"), these are supported by scrapy for example.<br><br>
-                    <b>Hotkeys:</b><br>
-                    Left/Right Arrow Keys - toggle sidebar position.<br>
-                    Backspace, Delete - (in picking mode) reset current selector.<br>
-                    Esc - dismiss current popup or turn off picking mode.<br>
-            </div>
+        <div id="conf">
+            <b>Data Tab:</b><br>
+            In picking mode data preview show a few special properties alongside element real attributes.<br>
+            Those are:<br>
+            _html - element inner html.<br>
+            _tag - element tag name (e.g. "a", "div", "span").<br>
+            _text - list of element direct texts (e.g. <span style="color: #af4356">&lt;span&gt;hello &lt;b&gt;to&lt;/b&gt; you&lt;/span&gt;</span> will be ["hello ", " you"]).<br>
+            _val - value under special nonstandard css pseudo elements if used (e.g. "div a::attr(href)"), these are supported by scrapy for example.<br><br>
+            <b>JavaScript toggling:</b><br>
+            Unfortunately it's not possible for an add-on to reliably disable javascript on a per tab basis.
+            We work with what we got by disabling javascript per domain for the duration of the extension being run.
+            For a better alternative navigate to Developer Tools (Ctrl+Shift+I), within it open the settings (F1 or three dots button in the corner) and find a javascript checkbox.<br><br>
+            <b>Hotkeys:</b><br>
+            Left/Right Arrow Keys - toggle sidebar position.<br>
+            Backspace, Delete - (in picking mode) reset current selector.<br>
+            Esc - dismiss current popup or turn off picking mode.<br>
+        </div>
     </div>
 
     <!-- Templates List -->

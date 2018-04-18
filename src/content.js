@@ -74,7 +74,7 @@ function toggleSelf () {
     if (document.querySelector('#ScrapeMate')) {
 		// reattach to our currently existing scope and tell it to shutdown
 		// TODO:medium silly
-		messageListeners.closeAll()
+		messageListeners.close()
 	} else {
 		initUI()
 	}
@@ -120,7 +120,7 @@ const messageListeners = {
 	enablePicker: enablePicker,
 	keyUp: onKeyUp,
 
-	closeAll: function () {
+	close: function () {
 		bus.detach()
 		window.removeEventListener('keyup', onKeyUp)
 		disablePicker()

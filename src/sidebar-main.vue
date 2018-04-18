@@ -87,7 +87,7 @@
             _tag - element tag name (e.g. "a", "div", "span").<br>
             _text - list of element direct texts (e.g. <span style="color: #af4356">&lt;span&gt;hello &lt;b&gt;to&lt;/b&gt; you&lt;/span&gt;</span> will be ["hello ", " you"]).<br>
             _val - value under special nonstandard css pseudo elements if used (e.g. "div a::attr(href)"), these are supported by scrapy for example.<br><br>
-            <b>JavaScript toggling:</b><br>
+            <b>JavaScript Toggling:</b><br>
             Unfortunately it's not possible for an add-on to reliably disable javascript on a per tab basis.
             We work with what we got by disabling javascript per domain for the duration of the extension being run.
             For a better alternative navigate to Developer Tools (Ctrl+Shift+I), within it open the settings (F1 or three dots button in the corner) and find a javascript checkbox.<br><br>

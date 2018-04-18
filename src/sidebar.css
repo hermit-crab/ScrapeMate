@@ -341,7 +341,8 @@ b {
     border-radius: 3px;
 	margin-top: 50px;
     background-color: #d8d8d8;
-    height: 70%;
+    overflow-y: auto;
+    height: 85%;
     width: 90vw;
     line-height: 1.3;
     color: #000000db;

@@ -17,7 +17,7 @@ function inject (tab) {
 }
 
 function addHeaders (e) {
-    let k = 'content-security-policy', v = "script-src 'none'";
+    let k = 'content-security-policy', v = "script-src 'none'"
     let h = e.responseHeaders.find(h => h.name.toLowerCase() === k)
     if (h && h.value.includes('script-src')) h.value = h.value.replace(/script-src [^;]*/, v)
     else if (h) h.value += ';' + v
@@ -30,7 +30,7 @@ const nojs = {
     _listeners: {},
     _jsDisabled: new Set(),
     block (tabId) {
-        if (this._listeners[tabId]) return;
+        if (this._listeners[tabId]) return
         this._listeners[tabId] = e => addHeaders(e)
         browser.webRequest.onHeadersReceived.addListener(
             this._listeners[tabId],
@@ -38,7 +38,7 @@ const nojs = {
             ['blocking', 'responseHeaders'])
         },
     unblock (tabId) {
-        if (!this._listeners[tabId]) return;
+        if (!this._listeners[tabId]) return
         browser.webRequest.onHeadersReceived.removeListener(this._listeners[tabId])
         delete this._listeners[tabId]
     },

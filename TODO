@@ -12,25 +12,27 @@ Implement testing capabilities:
 easy - json editor fields sorted
 hard - visual intuitive expression editor:
     full element(s) path shown, clicking on parents, their classes, id's and other attributes to include inside expression
+medium - make css-to-xpath button
 very hard - automatic structure discovery by matching html trees of multiple similarly structured pages (e.g. product pages on the same website)
 
 Medium:
+medium - exclude from picker by clicking on row in a data tab
+easy - n key -> new field, p key -> pick field, esc -> blur current input, esc on main window body -> focus sidebar
 easy - dont allow selecting ourselves / selectorgadget controls
 easy - syntax highlight html and json inside data control tab and in an editor
-medium - make css-to-xpath button
 medium - persist sidebar between clicks (storage (problematic since storage is accessed from iframe))
-medium - JS toggling
-medium - port to firefox
-medium - some kinda way to let specify target attribute
-very hard - instead of making any page/css mutations do all highlighting and picking over a click through overlay div
+medium - highlight target element when hovered over in a .data.many control tab
+very hard - instead of making any page/css mutations do all highlighting and picking over a click-through overlay div
 
 Low:
 easy - sort templates upper to lower domain levels
+medium - thorough logging
 hard - rework styles into something sensible
+medium - beautify and rework html
+easy - promises to async
+easy - separator of templates list popup header is below scrollbar
 medium - link patterns mode
-low - use lodash webpack plugin
 easy - template shift select many
-medium - highlight target element when hovered over in a .data.many control tab
 hard - tweak styles for firefox
 hard - fix styles for firefox gtk build
 easy - "show hidden elements" button (use jq ":hidden" selector maybe)

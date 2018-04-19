@@ -1,7 +1,6 @@
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 
-const dist = path.resolve(__dirname, 'dist')
 
 module.exports = {
 	mode: 'none',
@@ -12,7 +11,7 @@ module.exports = {
 	},
 	output: {
 		filename: '[name].js',
-		path: dist
+		path: path.resolve(__dirname, 'dist')
 	},
 	module: {
 		rules: [

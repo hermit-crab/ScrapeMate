@@ -10,8 +10,11 @@
                 <button class="blue plain-button fas fa-plus" @click="newTemplate" title="Create new template"></button>
                 <button class="plain-button fas fa-arrows-alt-h" @click="sendMessage('togglePosition')"
                     title="Toggle sidebar position"></button>
-                <button :disabled="jsDisabled" @click="sendMessage('disableJs')" class="plain-button fas fa-code"
-                    title="Disable JavaScript on this page (very naive method is used)"></button>
+                <button :disabled="jsDisabled === null"
+                    :class="[jsDisabled === null ? 'unknown' : (jsDisabled ? 'disabled' : 'enabled')]"
+                    @click="sendMessage('toggleJs')"
+                    class="plain-button fas fa-code js"
+                    title="Toggle JavaScript"></button>
                 <button class="plain-button fas fa-list" @click="openTemplatesView" title="Show all archived templates"></button>
                 <button class="plain-button fas fa-pencil-alt" @click="openJsonEditor" title="Edit template as JSON"></button>
                 <button class="plain-button far fa-clone" :disabled="!this.templates[this.template.id]" @click="cloneCurrentTemplate"
@@ -78,19 +81,18 @@
 
     <!-- Configuration View -->
 
-    <div class="modal-overlay" @click.self="resetView" v-if="confView">
+    <div class="modal-overlay" @click.self="resetView();onOptionsEdited()" v-if="confView">
         <div id="conf">
+            <div class="settings">
+                <label><input v-model="options.autonojs" type="checkbox">Automatically disable JavaScript.</label>
+            </div>
             <b>Data Tab:</b><br>
-            In picking mode data preview show a few special properties alongside element real attributes.<br>
+            In picking mode data previews show a few special properties alongside element real attributes.<br>
             Those are:<br>
             _html - element inner html.<br>
             _tag - element tag name (e.g. "a", "div", "span").<br>
             _text - list of element direct texts (e.g. <span style="color: #af4356">&lt;span&gt;hello &lt;b&gt;to&lt;/b&gt; you&lt;/span&gt;</span> will be ["hello ", " you"]).<br>
             _val - value under special nonstandard css pseudo elements if used (e.g. "div a::attr(href)"), these are supported by scrapy for example.<br><br>
-            <b>JavaScript Toggling:</b><br>
-            Unfortunately it's not possible for an add-on to reliably disable javascript on a per tab basis.
-            We work with what we got by disabling javascript per domain for the duration of the extension being run.
-            For a better alternative navigate to Developer Tools (Ctrl+Shift+I), within it open the settings (F1 or three dots button in the corner) and find a javascript checkbox.<br><br>
             <b>Hotkeys:</b><br>
             Left/Right Arrow Keys - toggle sidebar position.<br>
             Backspace, Delete - (in picking mode) reset current selector.<br>

@@ -23,7 +23,10 @@
 		"64": "icons/64.png",
 		"128": "icons/128.png"
 	},
-	"permissions": ["tabs", "<all_urls>", "storage"],
+	"permissions": ["tabs", "activeTab", "<all_urls>", "storage", "webRequest", "webRequestBlocking"],
 	"version": "0.1",
-	"manifest_version": 2
+	"manifest_version": 2,
+	"applications": {
+		"gecko": {"id": "mymyselfandirene@example.com"}
+	}
 }

@@ -57,7 +57,10 @@ export default {
         templateEdited: false,
         selectedTemplates: [],
 
-        jsDisabled: false,
+        jsDisabled: null,
+        options: {
+            autonojs: false
+        },
 
         // TODO:low just one var - currentView
         jsonEditorView: false,
@@ -72,20 +75,24 @@ export default {
 
         selElemAttrs: [], // [[[attrName, attrVale]...], ...]
         selElemUniqAttrs: [], // [attrName, ...]
-        attrToShow: null
+        attrToShow: null,
     }},
     created: function () {
+
         // setup communication with the page
         bus.attach(window.parent);
         Object.keys(this).filter(k => k.startsWith('remote_')).forEach(k => {
+            // TODO:low remote_ to exposed_ or something to match the parent
             let kk = k.slice('remote_'.length);
             bus.listeners[kk] = this[k].bind(this);
         });
 
+        this.sendMessage('isJsDisabled').then(v => this.jsDisabled = v)
+
         this.sendMessage('loadStorage').then(storage => {
 
-            // retrieve templates and config
-            let options = storage['options'] || {};
+            // retrieve config and templates
+            this.options = Object.assign({}, this.options, storage['options'] || {})
             Object.entries(storage).forEach(([k,v]) => {
                 if (!k.startsWith('_')) return;
                 let [id, t] = [k, v];
@@ -93,14 +100,11 @@ export default {
                 Vue.set(this.templates, id, t);
             });
 
-            // let know we good
-            this.sendMessage('sidebarInitialized');
-
             // match all available templates to current page
             this.checkAndUpdateSelectors(this.getAllSelectors(this.templates));
 
             // get page url
-            return this.sendMessage('location');
+            return this.sendMessage('getLocation');
         }).then(url => {
             this.loc = parseUrl(url);
 
@@ -195,8 +199,10 @@ export default {
                     .flatMap(t => t.fields.map(f => f.selector))
                     .uniq().value();
         },
+        onOptionsEdited: function () {
+            this.sendMessage('saveStorage', {options: this.options});
+        },
         remote_resetView: function () {this.resetView();},
-        remote_jsDisabled: function () {this.jsDisabled = true;},
         remote_keyUp: function(e) {this.onKeyUp(e);},
 
         // Template Management

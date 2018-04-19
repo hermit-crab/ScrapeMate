@@ -9,9 +9,7 @@ const SOURCES = {
 }
 
 let selectorGadget, sidebarIFrame
-let bus = new Bus()
-let jsDisabled = false
-
+let bus = new Bus() // TODO:medium rename to iframeBus
 
 window.browser = browser
 window.bus = bus
@@ -67,68 +65,41 @@ function initUI (cb) {
 
 	// setup communication with sidebar
 	bus.attach(sidebarIFrame.contentWindow)
-	bus.listeners = messageListeners
+	bus.listeners = exposed
+}
+
+function toggleJs () {
+	browser.runtime.sendMessage(['toggleJs'])
 }
 
 function toggleSelf () {
     if (document.querySelector('#ScrapeMate')) {
-		// reattach to our currently existing scope and tell it to shutdown
-		// TODO:medium silly
-		messageListeners.close()
+		close()
 	} else {
 		initUI()
 	}
 }
 
-function main () {
-	browser.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-		let [method, argument] = request
-		if (method === 'onClicked') {
-			toggleSelf()
-		}
-	})
-
-	// inject styles
-	SOURCES.styles.forEach(f => injectStyle(chrome.extension.getURL(f)));
-
-	// init ui
-	toggleSelf()
-
-	// try to avoid selecting our own iframe
-	if (!SelectorGadget.prototype.highlightIframeOrig)
-		SelectorGadget.prototype.highlightIframeOrig = SelectorGadget.prototype.highlightIframe
-	SelectorGadget.prototype.highlightIframe = function (elem, click) {
-		if (elem[0] === sidebarIFrame) return
-		return SelectorGadget.prototype.highlightIframeOrig.call(this, elem, click)
-	}
-
-	// hook into SelectorGadget selector update to send updates to our sidebar
-	if (!SelectorGadget.prototype.sgMousedownOrig)
-		SelectorGadget.prototype.sgMousedownOrig = SelectorGadget.prototype.sgMousedown
-	SelectorGadget.prototype.sgMousedown = function (e) {
-		let ret = SelectorGadget.prototype.sgMousedownOrig.call(this, e)
-		let sel = selectorGadget.path_output_field.value
-		bus.sendMessage('selectorPicked', sel)
-		return ret
-	}
+function close () {
+	bus.detach()
+	window.removeEventListener('keyup', onKeyUp)
+	disablePicker()
+	document.body.removeChild(sidebarIFrame)
+	browser.runtime.sendMessage(['onClosed'])
 }
 
-// TODO:medium the name is bad and I don't like this whole thing
-const messageListeners = {
+// TODO:low replace respond() callback scheme with simple and optional promise return types
+const exposed = {
 
 	disablePicker: disablePicker,
 	enablePicker: enablePicker,
 	keyUp: onKeyUp,
+	close: close,
+	toggleJs: toggleJs,
 
-	close: function () {
-		bus.detach()
-		window.removeEventListener('keyup', onKeyUp)
-		disablePicker()
-		document.body.removeChild(sidebarIFrame)
-	},
-
-	sidebarInitialized: function () {
-		if (jsDisabled) bus.sendMessage('jsDisabled')
+	isJsDisabled: function (arg, respond) {
+		// TODO:low also check if disabled natively (through developer tools or contentSetting)
+		browser.runtime.sendMessage(['isJsDisabled']).then(respond)
 	},
 
 	togglePosition: function () {
@@ -167,23 +138,8 @@ const messageListeners = {
 		document.body.removeChild(el)
 	},
 
-	location: function (data, respond) {
+	getLocation: function (arg, respond) {
 		respond(location.href)
-	},
-
-	disableJs: function () {
-		fetch(location, {credentials: 'include'})
-		.then(function (resp) {
-			return resp.text()
-		})
-		.then(function (text) {
-			document.documentElement.innerHTML = text
-			injectCSS(SOURCES.sgCss)
-			injectCSS(SOURCES.mainCss)
-			bus.detach()
-			jsDisabled = true
-			initUI()
-		})
 	},
 
 	loadStorage: function (arg, respond) {
@@ -246,6 +202,41 @@ const messageListeners = {
 					el => el.classList.remove('ScrapeMate_highlighted'))
 	}
 
+}
+
+function main () {
+	// listen to the extension messages
+	browser.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+		let [method, argument] = request
+		if (method === 'onClicked') {
+			toggleSelf()
+		}
+		return false
+	})
+
+	// inject styles
+	SOURCES.styles.forEach(f => injectStyle(chrome.extension.getURL(f)))
+
+	// init ui
+	toggleSelf()
+
+	// try to avoid selecting our own iframe
+	if (!SelectorGadget.prototype.highlightIframeOrig)
+		SelectorGadget.prototype.highlightIframeOrig = SelectorGadget.prototype.highlightIframe
+	SelectorGadget.prototype.highlightIframe = function (elem, click) {
+		if (elem[0] === sidebarIFrame) return
+		return SelectorGadget.prototype.highlightIframeOrig.call(this, elem, click)
+	}
+
+	// hook into SelectorGadget selector update to send updates to our sidebar
+	if (!SelectorGadget.prototype.sgMousedownOrig)
+		SelectorGadget.prototype.sgMousedownOrig = SelectorGadget.prototype.sgMousedown
+	SelectorGadget.prototype.sgMousedown = function (e) {
+		let ret = SelectorGadget.prototype.sgMousedownOrig.call(this, e)
+		let sel = selectorGadget.path_output_field.value
+		bus.sendMessage('selectorPicked', sel)
+		return ret
+	}
 }
 
 main()

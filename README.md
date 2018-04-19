@@ -14,7 +14,7 @@ Features include:
 * Planned features: [TODO](/TODO)
 
 ### Notes
-* This was first intended as a bookmarklet but due to various limitations bookmarklet mode has been dropped. You can still check out outdated but somewhat working version [at this page](https://rawgit.com/Unknowny/ScrapeMate/master/index.html).
+* This was first intended as a bookmarklet but due to various limitations bookmarklet mode has been dropped. You can still check out outdated but somewhat working version [at this page](https://rawgit.com/Unknowny/ScrapeMate/4a60a3bd65f9445a84a5642a056801ecd85d4212/index.html).
 
 ### Screenshots
 ![screenshot](https://lh3.googleusercontent.com/t9ikegsrt7f909R51_3J2i3RQ-BOGGHytn9DZGVUGUv07IUTaIVb-DJHyR0gpO58tfKzNpaBEg=w640-h400-e365)

@@ -17,8 +17,8 @@ Features include:
 * This was first intended as a bookmarklet but due to various limitations bookmarklet mode has been dropped. You can still check out outdated but somewhat working version [at this page](https://rawgit.com/Unknowny/ScrapeMate/4a60a3bd65f9445a84a5642a056801ecd85d4212/index.html).
 
 ### Screenshots
-![screenshot](https://lh3.googleusercontent.com/t9ikegsrt7f909R51_3J2i3RQ-BOGGHytn9DZGVUGUv07IUTaIVb-DJHyR0gpO58tfKzNpaBEg=w640-h400-e365)
-![screenshot](https://lh3.googleusercontent.com/blC1hopTdBtXe1Em-lsZN6RNXxFMRHiP7mfb-iKLOx7blAIyxQZl5YvT_1pWB0Qw-m40sMN_hQ=w640-h400-e365)
+![screenshot](https://lh3.googleusercontent.com/Yzdry6FnIr75tEJnoZCfdn1ybtlRkeyF4kNQZNH7z-GRYzA5Qvx5QW-gjdJKytyZILcYj--LLw=w640-h400-e365)
+![screenshot](https://lh3.googleusercontent.com/LOAdby4Dm1dfhyE0B0nQXznkyaIBjIUl3FDlFpoggxxEfYQUkRjJTUIpz_TNqOd6obBOlqnX=w640-h400-e365)
 
 ### Build
 ```

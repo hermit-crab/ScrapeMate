@@ -9,7 +9,6 @@ const active = {} // tab extension ui status (bool)
 window.injected = injected
 window.browser = browser
 window.active = active
-window.nojs = nojs
 
 
 function inject (tab) {
@@ -60,27 +59,27 @@ const nojs = {
     }
 }
 
+window.nojs = nojs
+
 // Main
 ////////////////////////////////////////////////////////////////////////////////
 
 // on main button clicked
-browser.browserAction.onClicked.addListener(tab => {
+browser.browserAction.onClicked.addListener(async tab => {
     if (injected.has(tab.id)) {
         browser.tabs.sendMessage(tab.id, ['onClicked'])
         active[tab.id] = !active[tab.id]
     } else {
-        // TODO:medium refactor (maybe after global async refactor)
-        browser.storage.sync.get('options').then(data => {
-            // turn on nojs / refresh page if conditions are met
-            let options = data.options || {}
-            if (options.autonojs && !active[tab.id]) {
-                active[tab.id] = true
-                nojs.block(tab.id)
-                browser.tabs.reload(tab.id)
-            } else {
-                inject(tab)
-            }
-        })
+        // turn on nojs and refresh page if conditions are met
+
+        let options = (await browser.storage.sync.get('options')).options || {}
+        if (options.autonojs && !active[tab.id]) {
+            active[tab.id] = true
+            nojs.block(tab.id)
+            browser.tabs.reload(tab.id)
+        } else {
+            inject(tab)
+        }
     }
 })
 

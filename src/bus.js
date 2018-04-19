@@ -64,6 +64,8 @@ WindowBus.prototype = {
             let promise = new Promise(resolve => {
                 if (!this.listeners[event]) throw Error('Listener not registered: ' + event)
                 let ret = this.listeners[event](data)
+                // TODO:high potentially infinite Promise resolution on the receiver side
+                // when unintentional undefined is returned from listener
                 if (ret instanceof Promise) ret.then(resolve)
                 else if (ret !== undefined) resolve(ret)
             }).then(response => {

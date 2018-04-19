@@ -78,7 +78,6 @@ function toggleSelf () {
 }
 
 function close () {
-	console.log('HUH')
 	iframeBus.detach()
 	window.removeEventListener('keyup', onKeyUp)
 	disablePicker()
@@ -144,12 +143,12 @@ const exposed = {
 		return browser.storage.sync.get()
 	},
 
-	removeStorageKeys () {
-		browser.storage.sync.remove(arg)
+	removeStorageKeys (keys) {
+		browser.storage.sync.remove(keys)
 	},
 
-	saveStorage () {
-		browser.storage.sync.set(arg)
+	saveStorage (obj) {
+		browser.storage.sync.set(obj)
 	},
 
 	getSelElemAttrs (selector) {

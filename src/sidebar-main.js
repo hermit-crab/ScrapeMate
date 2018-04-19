@@ -3,7 +3,6 @@ import _ from 'lodash'
 import MainComponent from './sidebar-main.vue'
 import WindowBus from './bus.js'
 import Selector from './selector.js'
-import { makeElem } from './util.js'
 
 
 // Template - main data model for this application:
@@ -29,11 +28,6 @@ const parentBus = new WindowBus()
 
 // Utils
 ////////////////////////////////////////////////////////////////////////////////
-
-function parseUrl (url) {
-    let a = makeElem('a', {href: url})
-    return _.pick(a, ['protocol', 'search', 'pathname', 'host', 'hostname', 'port', 'href', 'hash', 'origin'])
-}
 
 function toBooleanSorters (sorters) {
     return sorters.map(sorter => _.isFunction(sorter) ? _.negate(sorter) : v => v != sorter)
@@ -78,7 +72,7 @@ export default {
         selElemUniqAttrs: [], // [attrName, ...]
         attrToShow: null,
     }},
-    created: function () {
+    created: async function () {
 
         // setup communication with the page
         parentBus.attach(window.parent)
@@ -90,35 +84,31 @@ export default {
 
         this.sendMessage('isJsDisabled').then(v => this.jsDisabled = v)
 
-        this.sendMessage('loadStorage').then(storage => {
-
-            // retrieve config and templates
-            this.options = Object.assign({}, this.options, storage['options'] || {})
-            Object.entries(storage).forEach(([k,v]) => {
-                if (!k.startsWith('_')) return
-                let [id, t] = [k, v]
-                this.augmentTemplate(t, id)
-                Vue.set(this.templates, id, t)
-            })
-
-            // match all available templates to current page
-            this.checkAndUpdateSelectors(this.getAllSelectors(this.templates))
-
-            // get page url
-            return this.sendMessage('getLocation')
-        }).then(url => {
-            this.loc = parseUrl(url)
-
-            // find an existing template matching this page best
-            return this.findTemplate()
-        }).then(id => {
-            if (!id) {
-                this.newTemplate()
-            } else {
-                this.template = this.templates[id]
-                this.stashedTemplate = _.cloneDeep(this.template)
-            }
+        // retrieve config and templates
+        let storage = await this.sendMessage('loadStorage')
+        this.options = Object.assign({}, this.options, storage['options'] || {})
+        Object.entries(storage).forEach(([k,v]) => {
+            if (!k.startsWith('_')) return
+            let [id, t] = [k, v]
+            this.augmentTemplate(t, id)
+            Vue.set(this.templates, id, t)
         })
+
+        // test all available template selectors on current page
+        this.checkAndUpdateSelectors(this.getAllSelectors(this.templates))
+
+        // get page url
+        this.loc = new URL(await this.sendMessage('getLocation'))
+
+        // get best matching template
+        let id = await this.findTemplate()
+
+        if (!id) {
+            this.newTemplate()
+        } else {
+            this.template = this.templates[id]
+            this.stashedTemplate = _.cloneDeep(this.template)
+        }
     },
     mounted: function () {
         window.addEventListener('keyup', e => this.onKeyUp(e))
@@ -217,7 +207,7 @@ export default {
         },
         augmentTemplate (t, id) {
             t.id = id ? id : '_' + Date.now()
-            t.lastLoc = parseUrl(_.last(t.urls) || this.loc.href)
+            t.lastLoc = new URL(_.last(t.urls) || this.loc.href)
             t.fields.push(this.makeField())
         },
         cloneCurrentTemplate () {
@@ -279,7 +269,7 @@ export default {
         findTemplate () {
             // looks for template matching this page
 
-            return new Promise(resolve => {
+            return new Promise(async resolve => {
 
                 // filter out outside domain templates
                 let candidates = _.pickBy(this.templates, t => {
@@ -289,27 +279,26 @@ export default {
                 let id2sels = _.mapValues(candidates, t => _.map(t.fields, 'selector'))
                 let uniqSels = _.chain(id2sels).values().flatMap().uniq().value()
 
-                this.sendMessage('checkSelectors', uniqSels).then(data => {
+                let data = await this.sendMessage('checkSelectors', uniqSels)
 
-                    // count amount of working on this page selectors for each template
-                    var counted = Object.entries(id2sels).map(([id,sels]) => {
-                        return [id, sels.filter(s => data[s]).length]
-                    })
-                    counted.sort((a,b) => b[1] - a[1])
-                    let top = counted[0]
-
-                    if (top && top[1] > 0) {
-                        resolve(top[0])
-                        return
-                    }
-
-                    // if no templates found try to find template
-                    // with a url (hostname+pathname) match
-                    let id = _.findKey(candidates, t => {
-                        return (t.lastLoc.hostname + t.lastLoc.pathname) === (this.loc.hostname + this.loc.pathname)
-                    })
-                    resolve(id)
+                // count amount of working on this page selectors for each template
+                var counted = Object.entries(id2sels).map(([id,sels]) => {
+                    return [id, sels.filter(s => data[s]).length]
                 })
+                counted.sort((a,b) => b[1] - a[1])
+                let top = counted[0]
+
+                if (top && top[1] > 0) {
+                    resolve(top[0])
+                    return
+                }
+
+                // if no templates found try to find template
+                // with a url (hostname+pathname) match
+                let id = _.findKey(candidates, t => {
+                    return (t.lastLoc.hostname + t.lastLoc.pathname) === (this.loc.hostname + this.loc.pathname)
+                })
+                resolve(id)
             })
         },
         onTemplateTitleInput: _.debounce(function () {this.commitTemplate()}, 300),
@@ -384,21 +373,19 @@ export default {
             this._onFieldNameInput()
         },
         _onFieldNameInput: _.debounce(function () {this.commitTemplate()}, 300),
-        checkAndUpdateSelectors (sels) {
+        async checkAndUpdateSelectors (sels) {
             if (!sels) sels = this.template.fields.map(f => f.selector)
-            this.sendMessage('checkSelectors', sels).then(data => {
-                this.selCovers = Object.assign({}, this.selCovers, data)
-            })
+            let data = await this.sendMessage('checkSelectors', sels)
+            this.selCovers = Object.assign({}, this.selCovers, data)
         },
-        getSelElemAttrs (sel) {
-            this.sendMessage('getSelElemAttrs', sel).then(data => {
-                let sorters = _.concat(toBooleanSorters(htmlAttrImportance), _.identity)
+        async getSelElemAttrs (sel) {
+            let data = await this.sendMessage('getSelElemAttrs', sel)
+            let sorters = _.concat(toBooleanSorters(htmlAttrImportance), _.identity)
 
-                this.selElemAttrs = data
-                this.selElemUniqAttrs = _.chain(data)
-                    .flatMap(_.keys).uniq().sortBy(sorters).value()
-                this.attrToShow = this.selElemUniqAttrs[0]
-            })
+            this.selElemAttrs = data
+            this.selElemUniqAttrs = _.chain(data)
+                .flatMap(_.keys).uniq().sortBy(sorters).value()
+            this.attrToShow = this.selElemUniqAttrs[0]
         },
         cloneField (idx) {
             this.template.fields.splice(idx, 0, _.cloneDeep(this.fields[idx]))
@@ -422,12 +409,11 @@ export default {
 
         // Import/Export
 
-        exportTemplates () {
-            this.sendMessage('loadStorage').then(storage => {
-                let templates = _.pick(storage, this.selectedTemplates)
-                let content = JSON.stringify(templates, null, 2)
-                this.sendMessage('saveText', content)
-            })
+        async exportTemplates () {
+            let storage = await this.sendMessage('loadStorage')
+            let templates = _.pick(storage, this.selectedTemplates)
+            let content = JSON.stringify(templates, null, 2)
+            this.sendMessage('saveText', content)
         },
         importTemplates (e) {
             let file = e.target.files[0]

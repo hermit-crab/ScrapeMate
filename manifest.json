@@ -13,8 +13,8 @@
 		"default_title": "ScrapeMate Beta"
 	},
 	"name": "ScrapeMate Beta",
-	"description": "Scraping assistant tool. Editing and maintaining CSS/XPath selectors across webpages.",
-	"homepage_url": "https://github.com/Unknowny/ScrapeMate",
+	"description": "/* @echo meta.description */",
+	"homepage_url": "/* @echo meta.homepage */",
 	"icons": {
 		"16": "icons/16.png",
 		"24": "icons/24.png",
@@ -24,9 +24,11 @@
 		"128": "icons/128.png"
 	},
 	"permissions": ["tabs", "activeTab", "<all_urls>", "storage", "webRequest", "webRequestBlocking"],
-	"version": "0.1",
-	"manifest_version": 2,
+	"version": "/* @echo meta.version */",
+	// @ifndef env.CHROME
 	"applications": {
-		"gecko": {"id": "mymyselfandirene@example.com"}
-	}
+		"gecko": {"id": "me.myself.and.irene@fellow.com"}
+	},
+	// @endif
+	"manifest_version": 2
 }

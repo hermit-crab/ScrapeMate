@@ -2,11 +2,11 @@
 	"name": "ScrapeMate",
 	"version": "0.1.0",
 	"description": "Scraping assistant tool. Editing and maintaining CSS/XPath selectors across webpages.",
-	"main": "main.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"build": "webpack",
-		"watch": "webpack --watch"
+		"watch": "webpack --watch",
+		"package": "./package.sh"
 	},
 	"repository": {
 		"type": "git",
@@ -21,6 +21,7 @@
 	"homepage": "https://github.com/Unknowny/ScrapeMate#readme",
 	"devDependencies": {
 		"copy-webpack-plugin": "^4.5.1",
+		"preprocess": "^3.1.0",
 		"vue-loader": "^14.2.2",
 		"vue-template-compiler": "^2.5.16",
 		"webpack": "^4.5.0",

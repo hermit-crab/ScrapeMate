@@ -1,24 +1,26 @@
 // Window <> childWindow messaging
 
 // workflow:
-// let bus = new Bus()
+// let bus = new WindowBus()
 // bus.attach(peer) // peer window (e.g. iframe.contentWindow)
-// bus.listeners['someEvent'] = function (data, respond) {
-//     if (data === 'hi') respond('hello')
+// bus.listeners['someEvent'] = function (data) {
+//     if (data === 'hi') return Promise.resolve('hello') // return data or promise of it
 // }
+// and on the other side:
+// bus.sendMessage('someEvent', 'hi')
 
-let Bus = function () {}
+let WindowBus = function () {}
 
-export default Bus
+export default WindowBus
 
 // TODO:low make it fancy pants async somewhat?
 
-Bus.prototype = {
+WindowBus.prototype = {
     listeners: {},
     debug: false,
 
     _counter: 0,
-    _messages: {},
+    _sentMessages: {},
     _peer: null,
     _handler: null,
 
@@ -39,7 +41,7 @@ Bus.prototype = {
         this._log('=>', event, data)
         let id = ++this._counter
         return new Promise(resolve => {
-            this._messages[id] = resolve
+            this._sentMessages[id] = [event, resolve]
             this._peer.postMessage([event, data, id], '*')
         })
     },
@@ -55,22 +57,24 @@ Bus.prototype = {
         // TODO:medium make sure it's from peer
 
         if (e.data.length === 3) {
-            // received an event
+            // non initiating side: received an event
             let [event, data, id] = e.data
             this._log('<=', event, data)
             let resolve = null
             let promise = new Promise(resolve => {
                 if (!this.listeners[event]) throw Error('Listener not registered: ' + event)
-                this.listeners[event](data, resolve)
+                let ret = this.listeners[event](data)
+                if (ret instanceof Promise) ret.then(resolve)
+                else if (ret !== undefined) resolve(ret)
             }).then(response => {
                 this._log('=>ret', event, response)
                 this._peer.postMessage([response, id], '*')
             })
         } else if (e.data.length === 2) {
-            // received a response to an event
+            // initiating side: received a response to an event
             let [response, id] = e.data
-            this._log('<=got', response)
-            this._messages[id](response); // resolve()
+            this._log('<=got', `(${this._sentMessages[id][0]})`, response)
+            this._sentMessages[id][1](response) // resolve promised return (biblical)
         }
     }
 }

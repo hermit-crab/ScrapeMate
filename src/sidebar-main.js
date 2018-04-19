@@ -1,8 +1,10 @@
 import Vue from 'vue'
 import _ from 'lodash'
 import MainComponent from './sidebar-main.vue'
-import Bus from './bus.js'
+import WindowBus from './bus.js'
 import Selector from './selector.js'
+import { makeElem } from './util.js'
+
 
 // Template - main data model for this application:
 // {
@@ -23,14 +25,13 @@ const htmlAttrImportance = [
     attr => !attr.startsWith('on')
 ]
 
-const bus = new Bus()
+const parentBus = new WindowBus()
 
 // Utils
 ////////////////////////////////////////////////////////////////////////////////
 
 function parseUrl (url) {
-    let a = document.createElement('a')
-    a.setAttribute('href', url)
+    let a = makeElem('a', {href: url})
     return _.pick(a, ['protocol', 'search', 'pathname', 'host', 'hostname', 'port', 'href', 'hash', 'origin'])
 }
 
@@ -80,11 +81,11 @@ export default {
     created: function () {
 
         // setup communication with the page
-        bus.attach(window.parent)
+        parentBus.attach(window.parent)
         Object.keys(this).filter(k => k.startsWith('remote_')).forEach(k => {
             // TODO:low remote_ to exposed_ or something to match the parent
             let kk = k.slice('remote_'.length)
-            bus.listeners[kk] = this[k].bind(this)
+            parentBus.listeners[kk] = this[k].bind(this)
         })
 
         this.sendMessage('isJsDisabled').then(v => this.jsDisabled = v)
@@ -124,14 +125,14 @@ export default {
         this.$el.style = '' // show everything
     },
     computed: {
-        fields: function () {
+        fields () {
             return this.template.fields || []
         },
-        fieldCovers: function () {
+        fieldCovers () {
             // selCovers but accessing from fields
             return this.fields.map(f => this.selCovers[f.selector])
         },
-        sortedTemplates: function () {
+        sortedTemplates () {
             if (!this.loc) return []
             return _.sortBy(_.values(this.templates), [
                         t => t !== this.template, // current template
@@ -139,7 +140,7 @@ export default {
                         t => no3w(t.lastLoc.host) // hostname alphabetic
                     ])
         },
-        sortedSelElemAttrs: function () {
+        sortedSelElemAttrs () {
             if (!this.selElemAttrs.length) return []
             let sorters = _.concat(toBooleanSorters(htmlAttrImportance), _.identity)
             let pairsSorters = sorters.map(s => v => s(v[0]))
@@ -147,7 +148,7 @@ export default {
                 return _.sortBy(_.toPairs(attrs), pairsSorters)
             })
         },
-        templateStat: function () {
+        templateStat () {
             return _.values(this.sortedTemplates).map(t => {
                 let liveSels = '?'
                 let matchPower = 'low'
@@ -167,7 +168,7 @@ export default {
     },
     methods: {
 
-        onKeyUp: function (e) {
+        onKeyUp (e) {
             // note: on remote call from parent window e.target will not be set
 
             let isRoot = _.includes([undefined, document.body], e.target)
@@ -183,43 +184,43 @@ export default {
                 this.sendMessage('togglePosition')
             }
         },
-        sendMessage: function (event, data) {
+        sendMessage (event, data) {
             // cooperate with our content script in the page
-            return bus.sendMessage(event, data)
+            return parentBus.sendMessage(event, data)
         },
-        resetView: function () {
+        resetView () {
             this.disablePicker()
             this.controlTabsView = false
             this.jsonEditorView = false
             this.templatesView = false
             this.confView = false
         },
-        getAllSelectors: function (templates) {
+        getAllSelectors (templates) {
             return _.chain(templates).values()
                     .flatMap(t => t.fields.map(f => f.selector))
                     .uniq().value()
         },
-        onOptionsEdited: function () {
+        onOptionsEdited () {
             this.sendMessage('saveStorage', {options: this.options})
         },
-        remote_resetView: function () {this.resetView()},
-        remote_keyUp: function(e) {this.onKeyUp(e)},
+        remote_resetView () {this.resetView()},
+        remote_keyUp(e) {this.onKeyUp(e)},
 
         // Template Management
 
-        makeTemplate: function (augment) {
+        makeTemplate (augment) {
             return {
                 fields: [],
                 title: no3w(this.loc.hostname) + this.loc.pathname.replace(/\/$/, ''),
                 urls: [this.loc.href],
             }
         },
-        augmentTemplate: function (t, id) {
+        augmentTemplate (t, id) {
             t.id = id ? id : '_' + Date.now()
             t.lastLoc = parseUrl(_.last(t.urls) || this.loc.href)
             t.fields.push(this.makeField())
         },
-        cloneCurrentTemplate: function () {
+        cloneCurrentTemplate () {
             let t = _.cloneDeep(this.template)
             t.id = '_' + Date.now()
             t.title += ' New'
@@ -227,7 +228,7 @@ export default {
             this.commitTemplate()
             this.templateEdited = false
         },
-        revertTemplate: function () {
+        revertTemplate () {
             if (!confirm('Undo all edits made to this template?')) return
             this.resetView()
             this.template = this.stashedTemplate
@@ -235,38 +236,38 @@ export default {
             Vue.set(this.templates, this.template.id, this.template)
             this.templateEdited = false
         },
-        newTemplate: function () {
+        newTemplate () {
             this.resetView()
             this.template = this.makeTemplate()
             this.stashedTemplate = null
             this.augmentTemplate(this.template)
         },
-        openTemplatesView: function () {
+        openTemplatesView () {
             this.resetView()
             this.templatesView = true
         },
-        pickTemplate: function (t) {
+        pickTemplate (t) {
             this.template = t
             this.stashedTemplate = _.cloneDeep(this.template)
             this.checkAndUpdateSelectors()
             this.templatesView = false
         },
-        removeSelectedTemplates: function () {
+        removeSelectedTemplates () {
             this.templates = _.omit(this.templates, this.selectedTemplates)
             this.sendMessage('removeStorageKeys', this.selectedTemplates)
             this.selectedTemplates = []
         },
-        selectTemplate: function (t) {
+        selectTemplate (t) {
             if (_.includes(this.selectedTemplates, t.id))
                 this.selectedTemplates = _.without(this.selectedTemplates, t.id)
             else
                 this.selectedTemplates.push(t.id)
         },
-        selectAllTemplates: function () {
+        selectAllTemplates () {
             if (this.selectedTemplates.length) this.selectedTemplates = []
             else this.selectedTemplates = _.keys(this.templates)
         },
-        commitTemplate: function () {
+        commitTemplate () {
             this.templateEdited = true
             if (!_.includes(this.template.urls, this.loc.href))
                 this.template.urls.push(this.loc.href)
@@ -275,7 +276,7 @@ export default {
             template.fields = template.fields.slice(0, -1) // remove ghost field
             this.sendMessage('saveStorage', {[this.template.id]: template})
         },
-        findTemplate: function () {
+        findTemplate () {
             // looks for template matching this page
 
             return new Promise(resolve => {
@@ -315,19 +316,19 @@ export default {
 
         // Fields/Selectors Management
 
-        makeField: function () {
+        makeField () {
             return {name: '', selector: ''}
         },
-        addField: function () {
+        addField () {
             this.template.fields.push(this.makeField())
             this.commitTemplate()
         },
-        removeField: function (idx) {
+        removeField (idx) {
             if (this.fields[idx] === this.pickingField) this.disablePicker()
             this.template.fields.splice(idx, 1)
             this.commitTemplate()
         },
-        onPickerClick: function (f, e) {
+        onPickerClick (f, e) {
             if (f === _.last(this.fields)) this.addField()
 
             e.target.blur()
@@ -338,7 +339,7 @@ export default {
                 this.enablePicker(f)
             }
         },
-        enablePicker: function (f) {
+        enablePicker (f) {
             this.sendMessage('enablePicker')
             this.pickingField = f
             this.controlTabsView = true
@@ -354,15 +355,15 @@ export default {
                 if (scrollBy > 0) this.$el.scrollTop += scrollBy
             }, 100)
         },
-        disablePicker: function () {
+        disablePicker () {
             this.sendMessage('disablePicker')
             this.controlTabsView = false
             this.pickingField = null
         },
-        submitSelector: function (sel) {
+        submitSelector (sel) {
             this.sendMessage('changeSelectorPicked', sel)
         },
-        onSelectorInput: function (f) {
+        onSelectorInput (f) {
             if (f === _.last(this.fields)) this.addField()
             this._onSelectorInput(f)
         },
@@ -374,22 +375,22 @@ export default {
             if (this.pickingField)
                 this.getSelElemAttrs(sel)
         }, 300),
-        onSelectorEnter: function (f) {
+        onSelectorEnter (f) {
             if (f === this.pickingField)
                 this.submitSelector(f.selector)
         },
-        onFieldNameInput: function (f) {
+        onFieldNameInput (f) {
             if (f === _.last(this.fields)) this.addField()
             this._onFieldNameInput()
         },
         _onFieldNameInput: _.debounce(function () {this.commitTemplate()}, 300),
-        checkAndUpdateSelectors: function (sels) {
+        checkAndUpdateSelectors (sels) {
             if (!sels) sels = this.template.fields.map(f => f.selector)
             this.sendMessage('checkSelectors', sels).then(data => {
                 this.selCovers = Object.assign({}, this.selCovers, data)
             })
         },
-        getSelElemAttrs: function (sel) {
+        getSelElemAttrs (sel) {
             this.sendMessage('getSelElemAttrs', sel).then(data => {
                 let sorters = _.concat(toBooleanSorters(htmlAttrImportance), _.identity)
 
@@ -399,18 +400,18 @@ export default {
                 this.attrToShow = this.selElemUniqAttrs[0]
             })
         },
-        cloneField: function (idx) {
+        cloneField (idx) {
             this.template.fields.splice(idx, 0, _.cloneDeep(this.fields[idx]))
             this.commitTemplate()
         },
-        resetSelector: function (f) {
+        resetSelector (f) {
             if (!f) return
             f.selector = ''
             this.onSelectorInput(f)
             if (f === this.pickingField)
                 this.submitSelector(f.selector)
         },
-        remote_selectorPicked: function (sel) {
+        remote_selectorPicked (sel) {
             if (this.pickingField)
                 this.pickingField.selector = sel
             this.commitTemplate()
@@ -421,14 +422,14 @@ export default {
 
         // Import/Export
 
-        exportTemplates: function () {
+        exportTemplates () {
             this.sendMessage('loadStorage').then(storage => {
                 let templates = _.pick(storage, this.selectedTemplates)
                 let content = JSON.stringify(templates, null, 2)
                 this.sendMessage('saveText', content)
             })
         },
-        importTemplates: function (e) {
+        importTemplates (e) {
             let file = e.target.files[0]
             if (file.type !== 'application/json') {
                 alert(`Incorrect file type of "${file.name}": ${file.type}\nExpected: application/json`)
@@ -447,7 +448,7 @@ export default {
             // TODO:low report problem with loading it or something?
             reader.readAsText(file)
         },
-        commitImportedTemplates: function (object) {
+        commitImportedTemplates (object) {
             let templates = Object.entries(object).map(([id,t]) => {
                 id = id.toString()
                 if (!id.startsWith('_')) id = '_' + id
@@ -476,12 +477,12 @@ export default {
 
         // Field JSON editor
 
-        openJsonEditor: function () {
+        openJsonEditor () {
             this.resetView()
             this.resetJsonEditor()
             this.jsonEditorView = true
         },
-        applyJsonEditor: function () {
+        applyJsonEditor () {
             try {
                 let data = JSON.parse(this.jsonEditorText)
                 let fields = []
@@ -502,14 +503,14 @@ export default {
                 throw e
             }
         },
-        resetJsonEditor: function () {
+        resetJsonEditor () {
             this.jsonEditorIsReset = true
             let object = _.fromPairs(this.template.fields.slice(0, -1).map(f => {
                 return [f.name, {sel: f.selector, type: Selector.getType(f.selector)}]
             }))
             this.jsonEditorText = JSON.stringify(object, null, 2)
         },
-        copyJsonEditor: function () {
+        copyJsonEditor () {
             this.$refs.jsonEditor.select()
             document.execCommand('copy')
         },

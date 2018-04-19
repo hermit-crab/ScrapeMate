@@ -1,9 +1,15 @@
 import browser from '../vendor/browser-polyfill.js'
 
+
 const SCRIPTS = ['vendor/selectorgadget_combined.min.js', 'content.js']
 
 const injected = new Set() // tabs that have our content script running
 const active = {} // tab extension ui status (bool)
+
+window.injected = injected
+window.browser = browser
+window.active = active
+window.nojs = nojs
 
 
 function inject (tab) {
@@ -56,11 +62,6 @@ const nojs = {
 
 // Main
 ////////////////////////////////////////////////////////////////////////////////
-
-window.injected = injected
-window.browser = browser
-window.active = active
-window.nojs = nojs
 
 // on main button clicked
 browser.browserAction.onClicked.addListener(tab => {

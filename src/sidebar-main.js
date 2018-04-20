@@ -75,12 +75,13 @@ export default {
     created: async function () {
 
         // setup communication with the page
-        parentBus.attach(window.parent)
+        parentBus.setReceiver(window.parent)
         Object.keys(this).filter(k => k.startsWith('remote_')).forEach(k => {
             // TODO:low remote_ to exposed_ or something to match the parent
             let kk = k.slice('remote_'.length)
-            parentBus.listeners[kk] = this[k].bind(this)
+            parentBus.handlers[kk] = this[k].bind(this)
         })
+        parentBus.listen()
 
         this.sendMessage('isJsDisabled').then(v => this.jsDisabled = v)
 

@@ -59,13 +59,16 @@ function initUI (cb) {
 	// setup event handlers
 	window.addEventListener('keyup', onKeyUp)
 
+	// start listening
+	iframeBus.handlers = exposed
+	iframeBus.listen()
+
 	// inject sidebar
 	let props = {id: 'ScrapeMate', src: browser.extension.getURL(SOURCES.sidebarIFrame)}
 	sidebarIFrame = insertElem('iframe', props, document.body)
 	sidebarIFrame.addEventListener('load', e => {
-		// setup communication with sidebar
-		iframeBus.attach(sidebarIFrame.contentWindow)
-		iframeBus.listeners = exposed
+		// setup receiving side of the bus now
+		iframeBus.setReceiver(sidebarIFrame.contentWindow)
 	})
 }
 
@@ -75,7 +78,8 @@ function toggleSelf () {
 }
 
 function close () {
-	iframeBus.detach()
+	iframeBus.silence()
+	iframeBus.unsetReceiver()
 	window.removeEventListener('keyup', onKeyUp)
 	disablePicker()
 	document.body.removeChild(sidebarIFrame)

@@ -56,25 +56,22 @@ function tellRuntime (method, arg) {
 }
 
 function initUI (cb) {
-	// inject sidebar
-	let props = {id: 'ScrapeMate', src: browser.extension.getURL(SOURCES.sidebarIFrame)}
-	sidebarIFrame = insertElem('iframe', props, document.body)
-
 	// setup event handlers
 	window.addEventListener('keyup', onKeyUp)
 
-	// setup communication with sidebar
-	iframeBus.attach(sidebarIFrame.contentWindow)
-	console.log()
-	iframeBus.listeners = exposed
+	// inject sidebar
+	let props = {id: 'ScrapeMate', src: browser.extension.getURL(SOURCES.sidebarIFrame)}
+	sidebarIFrame = insertElem('iframe', props, document.body)
+	sidebarIFrame.addEventListener('load', e => {
+		// setup communication with sidebar
+		iframeBus.attach(sidebarIFrame.contentWindow)
+		iframeBus.listeners = exposed
+	})
 }
 
 function toggleSelf () {
-    if (document.querySelector('#ScrapeMate')) {
-		close()
-	} else {
-		initUI()
-	}
+    if (document.querySelector('#ScrapeMate')) close()
+	else initUI()
 }
 
 function close () {
@@ -85,7 +82,6 @@ function close () {
 	tellRuntime('onClosed')
 }
 
-// TODO:low replace respond() callback scheme with simple and optional promise return types
 const exposed = {
 
 	disablePicker: disablePicker,

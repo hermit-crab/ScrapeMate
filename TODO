@@ -4,6 +4,7 @@ High:
 easy - allow traversing upwards (if rejects are present - kill them)
 easy - smart upwards - traverse up for a common selector separate parents
 hard - nested selectors
+trivial - allow specifying field meta after a colon within field name (e.g. 'div a.item:price')
 hard - instead of making any page/css mutations do all highlighting and picking over a click-through overlay div
 Implement testing capabilities:
     medium - sweep over selected templates downloading and testing them on their respective pages

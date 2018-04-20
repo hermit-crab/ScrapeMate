@@ -11,7 +11,8 @@ Features include:
 * Quick preview of the data currently selected.
 * Support for `::text` / `::attr()` css pseudo elements and `has-class()` xpath function.
 * Toggling JavaScript for the tab currently working on.
-* Planned features: [TODO](/TODO)
+
+Planned features: nested selectors, more template testing and possibly actual extraction capabilities. See all: [TODO](/TODO).
 
 ### Notes
 * This was first intended as a bookmarklet but due to various limitations bookmarklet mode has been dropped. You can still check out outdated but somewhat working version [at this page](https://rawgit.com/Unknowny/ScrapeMate/master/index.html).

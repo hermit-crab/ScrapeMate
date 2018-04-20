@@ -1,6 +1,6 @@
 # ScrapeMate Beta ![GitHub Logo](/icons/24.png) 
 Scraping assistant tool. Editing and maintaining CSS/XPath selectors across webpages.  
-Available as a chrome and a firefox extensions.
+Available as a [Chrome/Chromium](https://chrome.google.com/webstore/detail/scrapemate-beta/daiomapeacamgnofkkmiaollhidcndld) and a [Firefox](https://addons.mozilla.org/en-US/firefox/addon/scrapemate/) extensions.
 
 Quick way to interactively pick and maintain CSS/XPath selectors and their presets for external use: website testing or scraping.
 

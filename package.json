@@ -4,8 +4,8 @@
 	"description": "Scraping assistant tool. Editing and maintaining CSS/XPath selectors across webpages.",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"build": "webpack",
-		"watch": "webpack --watch",
+		"build": "npx webpack",
+		"watch": "npx webpack --watch",
 		"package": "./package.sh"
 	},
 	"repository": {

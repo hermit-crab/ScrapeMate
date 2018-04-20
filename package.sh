@@ -1,7 +1,7 @@
-CHROME=1 webpack
+CHROME=1 npx webpack
 cd dist/extension
 zip -r ../chrome.zip *
 cd ../../
-webpack
+npx webpack
 cd dist/extension
 zip -r ../firefox.zip *

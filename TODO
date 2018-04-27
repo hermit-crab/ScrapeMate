@@ -2,9 +2,9 @@ Features/issues priority:
 
 High:
 easy - make selector input use textarea which exapnds on with its content 
-hard - instead of making any page/css mutations do all highlighting and picking over a click-through overlay div
+hard - instead of making any page/css mutations do all highlighting and picking over a click-through overlay canvas
 easy - allow traversing upwards (if rejects are present - kill them)
-easy - smart upwards - traverse up for a common selector separate parents
+easy - smart upwards - on myltuple elements selected -> traverse up to find uppermost parent element that is still a unique parent for each in the selected set  
 hard - nested selectors
 trivial - allow specifying field meta after a colon within field name
     (e.g. 'next-page-link:relative') as a way to provide additional info to the actual scraping tool
@@ -12,7 +12,7 @@ Implement testing capabilities:
     medium - sweep over selected templates downloading and testing them on their respective pages
     medium - allow to specify and edit template matching pages
     medium - implement some sorta contracts to verify templates
-easy - json editor fields sorted
+easy - json editor fields sorted properly
 hard - visual intuitive expression editor:
     full element(s) path shown, clicking on parents, their classes, id's and other attributes to include inside expression
 medium - make css-to-xpath button
@@ -22,7 +22,7 @@ Medium:
 medium - exclude from picker by clicking on row in a data tab
 easy - n key -> new field, p key -> pick field, esc -> blur current input, esc on main window body -> focus sidebar
 easy - dont allow selecting ourselves / selectorgadget controls
-easy - syntax highlight html and json inside data control tab and in an editor
+easy - syntax highlight html and json inside data control tab
 medium - highlight target element when hovered over in a .data.many control tab
 
 Low:
@@ -30,10 +30,10 @@ easy - sort templates upper to lower domain levels
 medium - thorough logging
 hard - rework styles into something sensible
 medium - beautify and rework html
-easy - separator of templates list popup header is below scrollbar
-medium - link patterns mode
+medium - detect obfuscated classes/ids and warn perhaps?
+easy - separator of templates list header is below scrollbar
+medium - link patterns mode?
 easy - template shift select many
-hard - tweak styles for firefox
 hard - fix styles for firefox gtk build
 easy - "show hidden elements" button (use jq ":hidden" selector maybe)
 hard - "highlight all" mode - highlights all elements on the page using different color for each respective field

@@ -8,6 +8,7 @@ medium - make selector input use textarea which exapnds on with its content
 hard - visual intuitive expression editor:
     full element(s) path shown, clicking on parents, their classes, id's and other attributes to include inside expression
 medium - make css-to-xpath button
+easy - fixed header
 hard - instead of making any page/css mutations do all highlighting and picking over a click-through overlay canvas
 easy - allow traversing upwards (if rejects are present - kill them)
 easy - smart upwards - on multuple elements selected -> traverse up to find uppermost parent element that is still a unique parent for each in the selected set  

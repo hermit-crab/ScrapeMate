@@ -2,11 +2,15 @@ Features/issues priority:
 
 High:
 easy - json editor fields sorted properly
-easy - json editor output quotes type option, tabulation option
-easy - make selector input use textarea which exapnds on with its content 
+medium - inject helpful selecting utilities into page js context
+    (sel() function, pageOwnVars() function which returns js variables set by page)
+medium - make selector input use textarea which exapnds on with its content 
+hard - visual intuitive expression editor:
+    full element(s) path shown, clicking on parents, their classes, id's and other attributes to include inside expression
+medium - make css-to-xpath button
 hard - instead of making any page/css mutations do all highlighting and picking over a click-through overlay canvas
 easy - allow traversing upwards (if rejects are present - kill them)
-easy - smart upwards - on myltuple elements selected -> traverse up to find uppermost parent element that is still a unique parent for each in the selected set  
+easy - smart upwards - on multuple elements selected -> traverse up to find uppermost parent element that is still a unique parent for each in the selected set  
 hard - nested selectors
 trivial - allow specifying field meta after a colon within field name
     (e.g. 'next-page-link:relative') as a way to provide additional info to the actual scraping tool
@@ -14,9 +18,6 @@ Implement testing capabilities:
     medium - sweep over selected templates downloading and testing them on their respective pages
     medium - allow to specify and edit template matching pages
     medium - implement some sorta contracts to verify templates
-hard - visual intuitive expression editor:
-    full element(s) path shown, clicking on parents, their classes, id's and other attributes to include inside expression
-medium - make css-to-xpath button
 very hard - automatic structure discovery by matching html trees of multiple similarly structured pages (e.g. product pages on the same website)
 
 Medium:

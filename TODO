@@ -1,6 +1,7 @@
 Features/issues priority:
 
 High:
+trivial - field buttons should not be tab navigatable
 easy - json editor fields sorted properly
 medium - inject helpful selecting utilities into page js context
     (sel() function, pageOwnVars() function which returns js variables set by page)

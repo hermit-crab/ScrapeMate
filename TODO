@@ -1,6 +1,7 @@
 Features/issues priority:
 
 High:
+easy - indicate name clash
 trivial - field buttons should not be tab navigatable
 easy - json editor fields sorted properly
 medium - inject helpful selecting utilities into page js context
